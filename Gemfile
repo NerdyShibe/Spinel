@@ -11,4 +11,5 @@ group :development, :test do
   # RSpec is a meta-gem that includes rspec-core, rspec-expectations, and rspec-mocks.
   gem 'rspec', '~> 3.12'
   gem 'rubocop-rspec', '~> 3.6'
+  gem 'ruby-lsp-rspec', require: false
 end
