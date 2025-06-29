@@ -1,0 +1,10 @@
+module Spinel
+  class Emu
+    @rom: untyped
+    @rom_data: untyped
+
+    def print_rom_info: -> untyped
+    def run: -> untyped
+    def load_rom: -> untyped
+  end
+end

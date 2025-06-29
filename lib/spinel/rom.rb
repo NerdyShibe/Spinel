@@ -8,8 +8,8 @@ module Spinel
   # It is the first step in the emulation process, as the ROM
   # contains the game's code and data that the emulator will execute.
   class Rom
-    def initialize(rom_path)
-      @rom_data = File.binread(rom_path).bytes
+    def initialize(rom)
+      @rom_data = File.binread(rom).bytes
     end
 
     attr_reader :rom_data
