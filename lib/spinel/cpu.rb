@@ -35,9 +35,19 @@ module Spinel
   #     program flow (e.g., jumps, calls). After execution, the cycle repeats.
   #
   class Cpu
-    def initialize(attribute: String)
-      @attribute = attribute
+    def initialize
+      @register_a = 0x00
+      @register_b = 0x00
+      @register_c = 0x00
+      @register_d = 0x00
+      @register_e = 0x00
     end
+
+    attr_reader :register_a,
+                :register_b,
+                :register_c,
+                :register_d,
+                :register_e
 
     private
 
