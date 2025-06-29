@@ -1,0 +1,12 @@
+module Spinel
+  class Cpu
+    @attribute: untyped
+
+    private
+    def fetch: -> untyped
+
+    def decode: -> untyped
+
+    def execute: -> untyped
+  end
+end
