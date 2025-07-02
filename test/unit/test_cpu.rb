@@ -1,18 +1,22 @@
-require_relative '../test_helper'
-require_relative '../../lib/spinel/cpu'
+# frozen_string_literal: true
 
-describe Spinel::Cpu do
-  before do
-    @cpu = Spinel::Cpu.new
+require_relative '../test_helper'
+require_relative '../../lib/spinel/hardware/cpu'
+
+class TestCpu < Minitest::Test
+  def setup
+    @cpu = Spinel::Hardware::Cpu.new
   end
 
-  describe '#initialize' do
-    it 'initializes the registers' do
-      _(@cpu.register_a).must_equal 0x00
-      _(@cpu.register_b).must_equal 0x00
-      _(@cpu.register_c).must_equal 0x00
-      _(@cpu.register_d).must_equal 0x00
-      _(@cpu.register_e).must_equal 0x00
-    end
+  def test_that_ticks_starts_at_zero
+    assert_equal @cpu.ticks, 0
+  end
+
+  def test_registers_initialization
+    assert_equal @cpu.register_a, 0x00
+    assert_equal @cpu.register_b, 0x00
+    assert_equal @cpu.register_c, 0x00
+    assert_equal @cpu.register_d, 0x00
+    assert_equal @cpu.register_e, 0x00
   end
 end
