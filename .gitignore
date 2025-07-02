@@ -1,3 +1,5 @@
 .idea
 .vscode
 .ruby-lsp
+coverage
+roms
