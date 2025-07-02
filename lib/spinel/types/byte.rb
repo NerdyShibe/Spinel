@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'debug'
-
 module Spinel
   module Types
     #
@@ -19,8 +17,7 @@ module Spinel
         @value = value & 0xFF
       end
 
-      # Returns the byte representation
-      # in decimal (base 10)
+      # Returns the byte representation in decimal (base 10)
       #
       # Examples:
       # Spinel::Types::Byte.new(99).in_decimal => '99'
@@ -32,9 +29,8 @@ module Spinel
         @value.to_s
       end
 
-      # Returns the byte representation
-      # in hexadecimal (base 16) padded with 0s
-      # if needed to complete the 8-bit notation
+      # Returns the byte representation in hexadecimal (base 16)
+      # The value is padded with 0s to complete the 8-bit notation (if needed)
       #
       # Examples:
       # Spinel::Types::Byte.new(15).in_hexa => '0x0F'
@@ -47,9 +43,8 @@ module Spinel
         "0x#{@value.to_s(16).upcase.rjust(2, '0')}"
       end
 
-      # Returns the byte representation
-      # in binary (base 2) padded with 0s
-      # if needed to complete the 8-bit notation
+      # Returns the byte representation in binary (base 2)
+      # Value is padded with 0s to complete the 8-bit notation (if needed)
       #
       # Examples:
       # Spinel::Types::Byte.new(1).in_binary => '0b00000001'
