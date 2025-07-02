@@ -1,10 +1,11 @@
 module Spinel
   class Emu
+    @cpu: Cpu
     @rom: untyped
     @rom_data: untyped
 
     def print_rom_info: -> untyped
     def run: -> untyped
-    def load_rom: -> untyped
+    def load_rom: (String) -> untyped
   end
 end

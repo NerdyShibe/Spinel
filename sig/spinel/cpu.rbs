@@ -1,6 +1,7 @@
 module Spinel
   class Cpu
     @attribute: untyped
+    @cpu: untyped
 
     private
     def fetch: -> untyped

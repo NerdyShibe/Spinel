@@ -1,35 +1,45 @@
 # frozen_string_literal: true
 
-require_relative 'spinel/cpu'
-require_relative 'spinel/emu'
-require_relative 'spinel/ppu'
-require_relative 'spinel/rom'
+require 'debug'
 
-# Get the ROM file from command line argument
-file_path = ARGV[0]
+require_relative 'spinel/emulator'
+require_relative 'spinel/constants'
+require_relative 'spinel/hardware/cpu'
+require_relative 'spinel/hardware/ppu'
+require_relative 'spinel/cartridge/rom'
 
-# Verify if the argument was provided
-if file_path.nil?
-  puts 'Error: You must provide a path to a GB rom'
-  puts 'Usage: $ ruby lib/spinel.rb /path/to/rom.gb'
+#
+# TODO: Write detailed comment about the Spinel module
+module Spinel
+  VERSION = '0.0.1'
+  TEST = 1
 
-  exit 1
-end
+  # Get the ROM file from command line argument
+  file_path = ARGV[0]
 
-# Do not allow directories as arguments
-if File.directory?(file_path)
-  puts 'Error: Path provided is a directory'
-  puts 'Usage: $ ruby lib/spinel.rb /path/to/rom.gb'
+  # Verify if the argument was provided
+  if file_path.nil?
+    puts 'Error: You must provide a path to a GB rom'
+    puts 'Usage: $ ruby lib/spinel.rb /path/to/rom.gb'
 
-  exit 2
-end
+    exit 1
+  end
 
-begin
-  # Creates the initial instance of the Emulator
-  # to start the emulation process
-  Spinel::Emu.new(file_path)
-rescue Errno::ENOENT, file_path
-  puts "Error: The file at #{file_path} does not exist"
+  # Do not allow directories as arguments
+  if File.directory?(file_path)
+    puts 'Error: Path provided is a directory'
+    puts 'Usage: $ ruby lib/spinel.rb /path/to/rom.gb'
 
-  exit 3
+    exit 2
+  end
+
+  begin
+    # Creates the initial instance of the Emulator
+    # to start the emulation process
+    Spinel::Emulator.new(file_path)
+  rescue Errno::ENOENT, file_path
+    puts "Error: The file at #{file_path} does not exist"
+
+    exit 3
+  end
 end
