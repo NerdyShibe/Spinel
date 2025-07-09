@@ -19,6 +19,16 @@ module Spinel
         print_full_info
       end
 
+      def read(address)
+        # TODO: Implement Bank switching logic
+        data[address]
+      end
+
+      def write(value)
+        # TODO: Implement Bank switching logic
+        data[address] = value
+      end
+
       # Each cartridge contains a header, located at the address range $0100—$014F.
       # The cartridge header provides information about the game itself
       # and the hardware it expects to run on
@@ -101,7 +111,7 @@ module Spinel
       def global_checksum
         checksum = 0
 
-        # Do not include these 2 bytes in the checksum
+        # 0x014E and 0x014F addresses are excluded from the checksum
         bytes = data.reject.with_index do |_byte, address|
           (0x014E..0x014F).include?(address)
         end
