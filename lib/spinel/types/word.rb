@@ -15,7 +15,7 @@ module Spinel
       end
 
       def in_decimal
-        @value
+        @value.to_s
       end
 
       def in_hexa
