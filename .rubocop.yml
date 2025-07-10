@@ -1,3 +1,9 @@
+require:
+  - rubocop-rspec
+
 Metrics/BlockLength:
   Exclude:
-    - 'test/**/test_*.rb'
+    - 'spec/**/*_spec.rb'
+
+RSpec/MultipleExpectations:
+  Enabled: false
