@@ -3,17 +3,20 @@
 require 'debug'
 
 require_relative 'spinel/emulator'
-require_relative 'spinel/constants'
 
-require_relative 'spinel/data/instructions'
+require_relative 'spinel/util/constants'
+require_relative 'spinel/util/instruction_set'
+require_relative 'spinel/util/opcodes'
 
-require_relative 'spinel/hardware/bus'
-require_relative 'spinel/hardware/cpu'
-require_relative 'spinel/hardware/ppu'
-require_relative 'spinel/hardware/registers'
-require_relative 'spinel/hardware/timer'
+require_relative 'spinel/components/bus'
+require_relative 'spinel/components/cpu'
+require_relative 'spinel/components/ppu'
+require_relative 'spinel/components/registers'
+require_relative 'spinel/components/timer'
 
-require_relative 'spinel/cartridge/rom'
+require_relative 'spinel/devices/cartridge'
+require_relative 'spinel/devices/rom_bank'
+require_relative 'spinel/devices/ram_bank'
 
 #
 # TODO: Write detailed comment about the Spinel module

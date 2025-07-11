@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 module Spinel
-  # Represents a Game Boy ROM Cartridge.
-  module Cartridge
-    # This class is responsible for loading the ROM data from a given ROM file
-    # and providing the Emulator to access it.
-    # It is the first step in the emulation process, as the ROM
-    # contains the game's code and data that the emulator will execute.
-    class Rom
+  module Devices
+    #
+    # When the game is loaded
+    # this class needs to map all possible
+    # ROM banks (each one should be 16 KiB)
+    #
+    class RomBank
       attr_reader :data
 
       #
@@ -16,7 +16,7 @@ module Spinel
         # Will have an array of bytes in decimal format [0, 255]
         @data = File.binread(file_path).bytes
 
-        print_full_info
+        # print_full_info
       end
 
       def read(address)

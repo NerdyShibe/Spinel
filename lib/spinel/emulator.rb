@@ -5,11 +5,14 @@ module Spinel
   class Emulator
     STATUSES = %w[paused running].freeze
 
-    def initialize(file, status = 'paused')
+    def initialize(rom_file, status = 'paused')
       @status = status
-      @cpu = Spinel::Cpu.new
 
-      load_rom(file)
+      @rom = Devices::RomBank.new(rom_file)
+      @bus = Hardware::Bus.new(@rom)
+      @cpu = Hardware::Cpu.new(@bus)
+
+      boot
     end
 
     attr_accessor :status
@@ -24,21 +27,18 @@ module Spinel
 
     private
 
-    def run
+    def boot
+      @status = 'running'
+      # Main core loop
+      # Keep track of the registers
+      # Initialize PC Register = $0100
+      # Load run
+      # Loop forever
+      # next instruction
+      # execute instruction
       while running?
-        # Main core loop
-        # Keep track of the registers
-        # Initialize PC Register = $0100
-        # Load run
-        # Loop forever
-        # next instruction
-        # execute instruction
+        @cpu.tick
       end
-    end
-
-    # Load the ROM data
-    def load_rom(rom_file)
-      @rom = Cartridge::Rom.new(rom_file)
     end
   end
 end

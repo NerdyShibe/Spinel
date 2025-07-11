@@ -2,6 +2,7 @@
 
 module Spinel
   module Hardware
+    #
     # This Class represents the 16-bit address bus of the Game Boy
     # Which is used to map the address values for the ROM, RAM, and I/O.
     #
@@ -23,21 +24,37 @@ module Spinel
     # ===============================================================================================
     #
     class Bus
-      def initialize
-        # Map the memory
+      attr_accessor :busy
+
+      def initialize(cartridge)
+        @cartridge = cartridge
+        @memory = Array.new(0xFFFF, 0x00) # 64 KiB
+        @busy = false
+
+        map_memory
+      end
+
+      def map_memory
+        # TODO: Split the cartridge memory into 2 16 KiB sections
+        @memory[0x0000..0x7FFF] = @cartridge.data
+        # @memory[0x8000..0x9FFF] = Video RAM
       end
 
       def read(address)
         case address
         when 0x0000..0x7FFF
-          @cartrige.read(address)
+          @cartridge.read(address)
+        else
+          raise('This part of memory was not mapped yet')
         end
       end
 
       def write(address, value)
         case address
         when 0x0000..0x7FFF
-          @cartrige.write(address, value)
+          @cartridge.write(address, value)
+        else
+          raise('This part of memory was not mapped yet')
         end
       end
     end

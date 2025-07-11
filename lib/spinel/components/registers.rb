@@ -132,6 +132,13 @@ module Spinel
           @f &= 0b11101111
         end
       end
+
+      def set_flags(z:, n:, h:, c:) # rubocop:disable Naming/MethodParameterName
+        self.z_flag = z
+        self.n_flag = n
+        self.h_flag = h
+        self.c_flag = c
+      end
     end
   end
 end
