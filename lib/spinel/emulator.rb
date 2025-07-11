@@ -9,7 +9,8 @@ module Spinel
       @status = status
 
       @rom = Devices::RomBank.new(rom_file)
-      @bus = Hardware::Bus.new(@rom)
+      @vram = Vram.new
+      @bus = Hardware::Bus.new(@rom, @vram)
       @cpu = Hardware::Cpu.new(@bus)
 
       boot
