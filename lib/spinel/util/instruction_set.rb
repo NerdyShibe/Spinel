@@ -69,11 +69,11 @@ module Spinel
       when 9
         @msb = (@registers.send(operand) >> 8) & 0xFF
         @registers.sp -= 1
-        @bus.write(@registers.sp, @msb)
+        @bus.write_byte(@registers.sp, @msb)
       when 13
         @lsb = @registers.send(operand) & 0xFF
         @registers.sp -= 1
-        @bus.write(@registers.sp, @lsb)
+        @bus.write_byte(@registers.sp, @lsb)
       else
         wait
       end
@@ -88,10 +88,10 @@ module Spinel
     def pop_r16(operand)
       case @ticks
       when 5
-        @lsb = @bus.read(@registers.sp)
+        @lsb = fetch_byte
         @registers.sp += 1
       when 9
-        @msb = @bus.read(@registers.sp)
+        @msb = fetch_byte
         @registers.sp += 1
       when 12
         value = (@msb << 8) | @lsb

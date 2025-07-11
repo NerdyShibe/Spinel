@@ -18,6 +18,7 @@ module Spinel
       def initialize(bus)
         @bus = bus
         @registers = Registers.new
+
         @ime_flag = true
         @halted = false
 
@@ -52,7 +53,7 @@ module Spinel
       private
 
       def fetch_byte
-        byte = @bus.read(@registers.pc)
+        byte = @bus.read_byte(@registers.pc)
         if @ticks == 1
           puts "Fetched opcode: 0x#{format('%02X', byte)} Starting instruction..."
         else

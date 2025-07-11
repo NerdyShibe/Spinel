@@ -24,35 +24,32 @@ module Spinel
     # ===============================================================================================
     #
     class Bus
-      attr_accessor :busy
+      attr_accessor :locked
 
       def initialize(cartridge)
         @cartridge = cartridge
-        @memory = Array.new(0xFFFF, 0x00) # 64 KiB
-        @busy = false
-
-        map_memory
+        @locked = false
       end
 
-      def map_memory
-        # TODO: Split the cartridge memory into 2 16 KiB sections
-        @memory[0x0000..0x7FFF] = @cartridge.data
-        # @memory[0x8000..0x9FFF] = Video RAM
-      end
-
-      def read(address)
+      # Delegates which component should be involved
+      # depending on the address range
+      #
+      # @param address [Integer] => 16-bit value
+      # @return [Integer] => 8-bit value
+      #
+      def read_byte(address)
         case address
         when 0x0000..0x7FFF
-          @cartridge.read(address)
+          @cartridge.read_byte(address)
         else
           raise('This part of memory was not mapped yet')
         end
       end
 
-      def write(address, value)
+      def write_byte(address, byte)
         case address
         when 0x0000..0x7FFF
-          @cartridge.write(address, value)
+          @cartridge.write_byte(address, byte)
         else
           raise('This part of memory was not mapped yet')
         end

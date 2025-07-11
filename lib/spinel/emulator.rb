@@ -29,16 +29,9 @@ module Spinel
 
     def boot
       @status = 'running'
+
       # Main core loop
-      # Keep track of the registers
-      # Initialize PC Register = $0100
-      # Load run
-      # Loop forever
-      # next instruction
-      # execute instruction
-      while running?
-        @cpu.tick
-      end
+      @cpu.tick while running?
     end
   end
 end

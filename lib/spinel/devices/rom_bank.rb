@@ -19,12 +19,12 @@ module Spinel
         # print_full_info
       end
 
-      def read(address)
+      def read_byte(address)
         # TODO: Implement Bank switching logic
         data[address]
       end
 
-      def write(value)
+      def write_byte(value)
         # TODO: Implement Bank switching logic
         data[address] = value
       end
