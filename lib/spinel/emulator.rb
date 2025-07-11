@@ -31,7 +31,12 @@ module Spinel
       @status = 'running'
 
       # Main core loop
-      @cpu.tick while running?
+      while running?
+        @cpu.tick
+        # @ppu.tick
+        # @apu.tick
+        # @timer.tick
+      end
     end
   end
 end

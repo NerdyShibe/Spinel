@@ -5,5 +5,7 @@ module Spinel
   # for the Game Boy Emulator
   class Ppu
     def initialize; end
+
+    def tick; end
   end
 end
