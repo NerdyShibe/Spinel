@@ -26,8 +26,10 @@ module Spinel
     class Bus
       attr_accessor :locked
 
-      def initialize(cartridge)
+      def initialize(cartridge, vram)
         @cartridge = cartridge
+        @vram = vram
+
         @locked = false
         @latch = 0
       end
@@ -50,11 +52,19 @@ module Spinel
         case address
         when 0x0000..0x7FFF
           @cartridge.read_byte(address)
+        when 0x8000..0x9FFF
+          @vram.read_byte(address)
         else
           raise('This part of memory was not mapped yet')
         end
       end
 
+      # Delegates which component should write the data
+      # depending on the address range
+      #
+      # @param address [Integer] => 16-bit value
+      # @return [Integer] => 8-bit value
+      #
       def write_byte(address, byte)
         case address
         when 0x0000..0x7FFF

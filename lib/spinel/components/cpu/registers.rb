@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Hardware
+  module Cpu
     #
     # Will hold the state of the CPU registers
     # A => The Accumulator register

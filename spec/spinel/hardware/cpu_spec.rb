@@ -7,7 +7,7 @@ RSpec.describe Spinel::Hardware::Cpu, type: :cpu do
 
   describe '#initialize' do
     it 'initializes the registers' do
-      expect(cpu.registers).to be_an_instance_of(Spinel::Hardware::Registers)
+      expect(cpu.registers).to be_an_instance_of(Spinel::Cpu::Registers)
     end
   end
 

@@ -17,7 +17,7 @@ module Spinel
 
       def initialize(bus)
         @bus = bus
-        @registers = Registers.new
+        @registers = Spinel::Cpu::Registers.new
 
         @ime_flag = true
         @halted = false
