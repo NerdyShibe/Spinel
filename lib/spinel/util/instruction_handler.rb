@@ -17,6 +17,11 @@ module Spinel
       end
     end
 
+    def ld_r8_r8(target_reg, source_reg)
+      source_reg_value = @registers.send(source_reg)
+      @registers.send(target_reg, source_reg_value)
+    end
+
     def ld_r16_d16
       abort('Instruction not yet implemented: ld_r16_d16')
     end
@@ -28,13 +33,16 @@ module Spinel
     #
     def jump_a16
       case @ticks
-      when 5
-        @lsb = fetch_byte
-      when 9
-        @msb = fetch_byte
+      when 5 then request_read
+      when 6..7 then wait
+      when 8 then @lsb = @bus.return_data
+      when 9 then request_read
+      when 10..11 then wait
+      when 12 then @msb = @bus.return_data
       when 13
         puts 'Calculating jump address...'
         @jump_address = (@msb << 8) | @lsb
+      when 14..15 then wait
       when 16
         puts "Jumping to $#{format('%04X', @jump_address)} address"
         @registers.pc = @jump_address
