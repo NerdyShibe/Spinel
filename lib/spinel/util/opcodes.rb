@@ -9,2054 +9,262 @@ module Spinel
     # CPU_INSTRUCTIONS[255] holds the 0xFF opcode
     #
     CPU_INSTRUCTIONS = [
-      {
-        opcode: 0x00,
-        mnemonic: 'NOP',
-        length: 1,
-        cycles: 4,
-        method: :nop,
-        operands: []
-      },
-      {
-        opcode: 0x01,
-        mnemonic: 'LD BC, d16',
-        length: 3,
-        cycles: 12,
-        method: :load_r16_d16,
-        operands: %i[bc d16]
-      },
-      {
-        opcode: 0x02,
-        mnemonic: 'LD (BC), A',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[bc a]
-      },
-      {
-        opcode: 0x03,
-        mnemonic: 'INC BC',
-        length: 1,
-        cycles: 8,
-        method: :inc_r16,
-        operands: [:bc]
-      },
-      {
-        opcode: 0x04,
-        mnemonic: 'INC B',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x05,
-        mnemonic: 'DEC B',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x06,
-        mnemonic: 'LD B, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x07,
-        mnemonic: 'RLCA',
-        length: 1,
-        cycles: 4,
-        method: :rlca,
-        operands: []
-      },
-      {
-        opcode: 0x08,
-        mnemonic: 'LD (a16), SP',
-        length: 3,
-        cycles: 20,
-        method: :load_mem_sp,
-        operands: %i[a16 sp]
-      },
-      {
-        opcode: 0x09,
-        mnemonic: 'ADD HL, BC',
-        length: 1,
-        cycles: 8,
-        method: :add_hl_r16,
-        operands: [:bc]
-      },
-      {
-        opcode: 0x0A,
-        mnemonic: 'LD A, (BC)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[a bc]
-      },
-      {
-        opcode: 0x0B,
-        mnemonic: 'DEC BC',
-        length: 1,
-        cycles: 8,
-        method: :dec_r16,
-        operands: [:bc]
-      },
-      {
-        opcode: 0x0C,
-        mnemonic: 'INC C',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x0D,
-        mnemonic: 'DEC C',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x0E,
-        mnemonic: 'LD C, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x0F,
-        mnemonic: 'RRCA',
-        length: 1,
-        cycles: 4,
-        method: :rrca,
-        operands: []
-      },
-      {
-        opcode: 0x10,
-        mnemonic: 'STOP',
-        length: 2,
-        cycles: 4,
-        method: :stop,
-        operands: []
-      },
-      {
-        opcode: 0x11,
-        mnemonic: 'LD DE, d16',
-        length: 3,
-        cycles: 12,
-        method: :load_r16_d16,
-        operands: %i[de d16]
-      },
-      {
-        opcode: 0x12,
-        mnemonic: 'LD (DE), A',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[de a]
-      },
-      {
-        opcode: 0x13,
-        mnemonic: 'INC DE',
-        length: 1,
-        cycles: 8,
-        method: :inc_r16,
-        operands: [:de]
-      },
-      {
-        opcode: 0x14,
-        mnemonic: 'INC D',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x15,
-        mnemonic: 'DEC D',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x16,
-        mnemonic: 'LD D, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x17,
-        mnemonic: 'RLA',
-        length: 1,
-        cycles: 4,
-        method: :rla,
-        operands: []
-      },
-      {
-        opcode: 0x18,
-        mnemonic: 'JR r8',
-        length: 2,
-        cycles: 12,
-        method: :jump_relative,
-        operands: []
-      },
-      {
-        opcode: 0x19,
-        mnemonic: 'ADD HL, DE',
-        length: 1,
-        cycles: 8,
-        method: :add_hl_r16,
-        operands: [:de]
-      },
-      {
-        opcode: 0x1A,
-        mnemonic: 'LD A, (DE)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[a de]
-      },
-      {
-        opcode: 0x1B,
-        mnemonic: 'DEC DE',
-        length: 1,
-        cycles: 8,
-        method: :dec_r16,
-        operands: [:de]
-      },
-      {
-        opcode: 0x1C,
-        mnemonic: 'INC E',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x1D,
-        mnemonic: 'DEC E',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x1E,
-        mnemonic: 'LD E, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x1F,
-        mnemonic: 'RRA',
-        length: 1,
-        cycles: 4,
-        method: :rra,
-        operands: []
-      },
-      {
-        opcode: 0x20,
-        mnemonic: 'JR NZ, r8',
-        length: 2,
-        cycles: [12, 8],
-        method: :jump_relative_cond,
-        operands: [:nz]
-      },
-      {
-        opcode: 0x21,
-        mnemonic: 'LD HL, d16',
-        length: 3,
-        cycles: 12,
-        method: :load_r16_d16,
-        operands: %i[hl d16]
-      },
-      {
-        opcode: 0x22,
-        mnemonic: 'LD (HL+), A',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_inc_hl,
-        operands: [:a]
-      },
-      {
-        opcode: 0x23,
-        mnemonic: 'INC HL',
-        length: 1,
-        cycles: 8,
-        method: :inc_r16,
-        operands: [:hl]
-      },
-      {
-        opcode: 0x24,
-        mnemonic: 'INC H',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x25,
-        mnemonic: 'DEC H',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x26,
-        mnemonic: 'LD H, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x27,
-        mnemonic: 'DAA',
-        length: 1,
-        cycles: 4,
-        method: :daa,
-        operands: []
-      },
-      {
-        opcode: 0x28,
-        mnemonic: 'JR Z, r8',
-        length: 2,
-        cycles: [12, 8],
-        method: :jump_relative_cond,
-        operands: [:z]
-      },
-      {
-        opcode: 0x29,
-        mnemonic: 'ADD HL, HL',
-        length: 1,
-        cycles: 8,
-        method: :add_hl_r16,
-        operands: [:hl]
-      },
-      {
-        opcode: 0x2A,
-        mnemonic: 'LD A, (HL+)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem_inc_hl,
-        operands: []
-      },
-      {
-        opcode: 0x2B,
-        mnemonic: 'DEC HL',
-        length: 1,
-        cycles: 8,
-        method: :dec_r16,
-        operands: [:hl]
-      },
-      {
-        opcode: 0x2C,
-        mnemonic: 'INC L',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x2D,
-        mnemonic: 'DEC L',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x2E,
-        mnemonic: 'LD L, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x2F,
-        mnemonic: 'CPL',
-        length: 1,
-        cycles: 4,
-        method: :cpl,
-        operands: []
-      },
-      {
-        opcode: 0x30,
-        mnemonic: 'JR NC, r8',
-        length: 2,
-        cycles: [12, 8],
-        method: :jump_relative_cond,
-        operands: [:nc]
-      },
-      {
-        opcode: 0x31,
-        mnemonic: 'LD SP, d16',
-        length: 3,
-        cycles: 12,
-        method: :load_r16_d16,
-        operands: %i[sp d16]
-      },
-      {
-        opcode: 0x32,
-        mnemonic: 'LD (HL-), A',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_dec_hl,
-        operands: [:a]
-      },
-      {
-        opcode: 0x33,
-        mnemonic: 'INC SP',
-        length: 1,
-        cycles: 8,
-        method: :inc_r16,
-        operands: [:sp]
-      },
-      {
-        opcode: 0x34,
-        mnemonic: 'INC (HL)',
-        length: 1,
-        cycles: 12,
-        method: :inc_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0x35,
-        mnemonic: 'DEC (HL)',
-        length: 1,
-        cycles: 12,
-        method: :dec_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0x36,
-        mnemonic: 'LD (HL), d8',
-        length: 2,
-        cycles: 12,
-        method: :load_mem_d8,
-        operands: []
-      },
-      {
-        opcode: 0x37,
-        mnemonic: 'SCF',
-        length: 1,
-        cycles: 4,
-        method: :scf,
-        operands: []
-      },
-      {
-        opcode: 0x38,
-        mnemonic: 'JR C, r8',
-        length: 2,
-        cycles: [12, 8],
-        method: :jump_relative_cond,
-        operands: [:c]
-      },
-      {
-        opcode: 0x39,
-        mnemonic: 'ADD HL, SP',
-        length: 1,
-        cycles: 8,
-        method: :add_hl_r16,
-        operands: [:sp]
-      },
-      {
-        opcode: 0x3A,
-        mnemonic: 'LD A, (HL-)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem_dec_hl,
-        operands: []
-      },
-      {
-        opcode: 0x3B,
-        mnemonic: 'DEC SP',
-        length: 1,
-        cycles: 8,
-        method: :dec_r16,
-        operands: [:sp]
-      },
-      {
-        opcode: 0x3C,
-        mnemonic: 'INC A',
-        length: 1,
-        cycles: 4,
-        method: :inc_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0x3D,
-        mnemonic: 'DEC A',
-        length: 1,
-        cycles: 4,
-        method: :dec_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0x3E,
-        mnemonic: 'LD A, d8',
-        length: 2,
-        cycles: 8,
-        method: :load_r8_d8,
-        operands: [:a]
-      },
-      {
-        opcode: 0x3F,
-        mnemonic: 'CCF',
-        length: 1,
-        cycles: 4,
-        method: :ccf,
-        operands: []
-      },
-      {
-        opcode: 0x40,
-        mnemonic: 'LD B, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b b]
-      },
-      {
-        opcode: 0x41,
-        mnemonic: 'LD B, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b c]
-      },
-      {
-        opcode: 0x42,
-        mnemonic: 'LD B, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b d]
-      },
-      {
-        opcode: 0x43,
-        mnemonic: 'LD B, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b e]
-      },
-      {
-        opcode: 0x44,
-        mnemonic: 'LD B, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b h]
-      },
-      {
-        opcode: 0x45,
-        mnemonic: 'LD B, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b l]
-      },
-      {
-        opcode: 0x46,
-        mnemonic: 'LD B, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[b hl]
-      },
-      {
-        opcode: 0x47,
-        mnemonic: 'LD B, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[b a]
-      },
-      {
-        opcode: 0x48,
-        mnemonic: 'LD C, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c b]
-      },
-      {
-        opcode: 0x49,
-        mnemonic: 'LD C, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c c]
-      },
-      {
-        opcode: 0x4A,
-        mnemonic: 'LD C, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c d]
-      },
-      {
-        opcode: 0x4B,
-        mnemonic: 'LD C, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c e]
-      },
-      {
-        opcode: 0x4C,
-        mnemonic: 'LD C, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c h]
-      },
-      {
-        opcode: 0x4D,
-        mnemonic: 'LD C, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c l]
-      },
-      {
-        opcode: 0x4E,
-        mnemonic: 'LD C, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[c hl]
-      },
-      {
-        opcode: 0x4F,
-        mnemonic: 'LD C, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[c a]
-      },
-      {
-        opcode: 0x50,
-        mnemonic: 'LD D, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d b]
-      },
-      {
-        opcode: 0x51,
-        mnemonic: 'LD D, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d c]
-      },
-      {
-        opcode: 0x52,
-        mnemonic: 'LD D, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d d]
-      },
-      {
-        opcode: 0x53,
-        mnemonic: 'LD D, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d e]
-      },
-      {
-        opcode: 0x54,
-        mnemonic: 'LD D, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d h]
-      },
-      {
-        opcode: 0x55,
-        mnemonic: 'LD D, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d l]
-      },
-      {
-        opcode: 0x56,
-        mnemonic: 'LD D, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[d hl]
-      },
-      {
-        opcode: 0x57,
-        mnemonic: 'LD D, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[d a]
-      },
-      {
-        opcode: 0x58,
-        mnemonic: 'LD E, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e b]
-      },
-      {
-        opcode: 0x59,
-        mnemonic: 'LD E, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e c]
-      },
-      {
-        opcode: 0x5A,
-        mnemonic: 'LD E, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e d]
-      },
-      {
-        opcode: 0x5B,
-        mnemonic: 'LD E, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e e]
-      },
-      {
-        opcode: 0x5C,
-        mnemonic: 'LD E, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e h]
-      },
-      {
-        opcode: 0x5D,
-        mnemonic: 'LD E, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e l]
-      },
-      {
-        opcode: 0x5E,
-        mnemonic: 'LD E, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[e hl]
-      },
-      {
-        opcode: 0x5F,
-        mnemonic: 'LD E, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[e a]
-      },
-      {
-        opcode: 0x60,
-        mnemonic: 'LD H, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h b]
-      },
-      {
-        opcode: 0x61,
-        mnemonic: 'LD H, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h c]
-      },
-      {
-        opcode: 0x62,
-        mnemonic: 'LD H, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h d]
-      },
-      {
-        opcode: 0x63,
-        mnemonic: 'LD H, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h e]
-      },
-      {
-        opcode: 0x64,
-        mnemonic: 'LD H, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h h]
-      },
-      {
-        opcode: 0x65,
-        mnemonic: 'LD H, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h l]
-      },
-      {
-        opcode: 0x66,
-        mnemonic: 'LD H, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[h hl]
-      },
-      {
-        opcode: 0x67,
-        mnemonic: 'LD H, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[h a]
-      },
-      {
-        opcode: 0x68,
-        mnemonic: 'LD L, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l b]
-      },
-      {
-        opcode: 0x69,
-        mnemonic: 'LD L, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l c]
-      },
-      {
-        opcode: 0x6A,
-        mnemonic: 'LD L, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l d]
-      },
-      {
-        opcode: 0x6B,
-        mnemonic: 'LD L, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l e]
-      },
-      {
-        opcode: 0x6C,
-        mnemonic: 'LD L, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l h]
-      },
-      {
-        opcode: 0x6D,
-        mnemonic: 'LD L, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l l]
-      },
-      {
-        opcode: 0x6E,
-        mnemonic: 'LD L, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[l hl]
-      },
-      {
-        opcode: 0x6F,
-        mnemonic: 'LD L, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[l a]
-      },
-      {
-        opcode: 0x70,
-        mnemonic: 'LD (HL), B',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl b]
-      },
-      {
-        opcode: 0x71,
-        mnemonic: 'LD (HL), C',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl c]
-      },
-      {
-        opcode: 0x72,
-        mnemonic: 'LD (HL), D',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl d]
-      },
-      {
-        opcode: 0x73,
-        mnemonic: 'LD (HL), E',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl e]
-      },
-      {
-        opcode: 0x74,
-        mnemonic: 'LD (HL), H',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl h]
-      },
-      {
-        opcode: 0x75,
-        mnemonic: 'LD (HL), L',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl l]
-      },
-      {
-        opcode: 0x76,
-        mnemonic: 'HALT',
-        length: 1,
-        cycles: 4,
-        method: :halt,
-        operands: []
-      },
-      {
-        opcode: 0x77,
-        mnemonic: 'LD (HL), A',
-        length: 1,
-        cycles: 8,
-        method: :load_mem_r8,
-        operands: %i[hl a]
-      },
-      {
-        opcode: 0x78,
-        mnemonic: 'LD A, B',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a b]
-      },
-      {
-        opcode: 0x79,
-        mnemonic: 'LD A, C',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a c]
-      },
-      {
-        opcode: 0x7A,
-        mnemonic: 'LD A, D',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a d]
-      },
-      {
-        opcode: 0x7B,
-        mnemonic: 'LD A, E',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a e]
-      },
-      {
-        opcode: 0x7C,
-        mnemonic: 'LD A, H',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a h]
-      },
-      {
-        opcode: 0x7D,
-        mnemonic: 'LD A, L',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a l]
-      },
-      {
-        opcode: 0x7E,
-        mnemonic: 'LD A, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :load_r8_mem,
-        operands: %i[a hl]
-      },
-      {
-        opcode: 0x7F,
-        mnemonic: 'LD A, A',
-        length: 1,
-        cycles: 4,
-        method: :load_r8_r8,
-        operands: %i[a a]
-      },
-      {
-        opcode: 0x80,
-        mnemonic: 'ADD A, B',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x81,
-        mnemonic: 'ADD A, C',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x82,
-        mnemonic: 'ADD A, D',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x83,
-        mnemonic: 'ADD A, E',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x84,
-        mnemonic: 'ADD A, H',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x85,
-        mnemonic: 'ADD A, L',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x86,
-        mnemonic: 'ADD A, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :add_a_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0x87,
-        mnemonic: 'ADD A, A',
-        length: 1,
-        cycles: 4,
-        method: :add_a_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0x88,
-        mnemonic: 'ADC A, B',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x89,
-        mnemonic: 'ADC A, C',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x8A,
-        mnemonic: 'ADC A, D',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x8B,
-        mnemonic: 'ADC A, E',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x8C,
-        mnemonic: 'ADC A, H',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x8D,
-        mnemonic: 'ADC A, L',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x8E,
-        mnemonic: 'ADC A, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :adc_a_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0x8F,
-        mnemonic: 'ADC A, A',
-        length: 1,
-        cycles: 4,
-        method: :adc_a_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0x90,
-        mnemonic: 'SUB B',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x91,
-        mnemonic: 'SUB C',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x92,
-        mnemonic: 'SUB D',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x93,
-        mnemonic: 'SUB E',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x94,
-        mnemonic: 'SUB H',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x95,
-        mnemonic: 'SUB L',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x96,
-        mnemonic: 'SUB (HL)',
-        length: 1,
-        cycles: 8,
-        method: :sub_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0x97,
-        mnemonic: 'SUB A',
-        length: 1,
-        cycles: 4,
-        method: :sub_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0x98,
-        mnemonic: 'SBC A, B',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0x99,
-        mnemonic: 'SBC A, C',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0x9A,
-        mnemonic: 'SBC A, D',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0x9B,
-        mnemonic: 'SBC A, E',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0x9C,
-        mnemonic: 'SBC A, H',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0x9D,
-        mnemonic: 'SBC A, L',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0x9E,
-        mnemonic: 'SBC A, (HL)',
-        length: 1,
-        cycles: 8,
-        method: :sbc_a_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0x9F,
-        mnemonic: 'SBC A, A',
-        length: 1,
-        cycles: 4,
-        method: :sbc_a_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0xA0,
-        mnemonic: 'AND B',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0xA1,
-        mnemonic: 'AND C',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0xA2,
-        mnemonic: 'AND D',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0xA3,
-        mnemonic: 'AND E',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0xA4,
-        mnemonic: 'AND H',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0xA5,
-        mnemonic: 'AND L',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0xA6,
-        mnemonic: 'AND (HL)',
-        length: 1,
-        cycles: 8,
-        method: :and_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0xA7,
-        mnemonic: 'AND A',
-        length: 1,
-        cycles: 4,
-        method: :and_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0xA8,
-        mnemonic: 'XOR B',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:b]
-      },
-      {
-        opcode: 0xA9,
-        mnemonic: 'XOR C',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:c]
-      },
-      {
-        opcode: 0xAA,
-        mnemonic: 'XOR D',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:d]
-      },
-      {
-        opcode: 0xAB,
-        mnemonic: 'XOR E',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:e]
-      },
-      {
-        opcode: 0xAC,
-        mnemonic: 'XOR H',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:h]
-      },
-      {
-        opcode: 0xAD,
-        mnemonic: 'XOR L',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:l]
-      },
-      {
-        opcode: 0xAE,
-        mnemonic: 'XOR (HL)',
-        length: 1,
-        cycles: 8,
-        method: :xor_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0xAF,
-        mnemonic: 'XOR A',
-        length: 1,
-        cycles: 4,
-        method: :xor_r,
-        operands: [:a]
-      },
-      {
-        opcode: 0xB0,
-        mnemonic: 'OR B',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0xB1,
-        mnemonic: 'OR C',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0xB2,
-        mnemonic: 'OR D',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0xB3,
-        mnemonic: 'OR E',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0xB4,
-        mnemonic: 'OR H',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0xB5,
-        mnemonic: 'OR L',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0xB6,
-        mnemonic: 'OR (HL)',
-        length: 1,
-        cycles: 8,
-        method: :or_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0xB7,
-        mnemonic: 'OR A',
-        length: 1,
-        cycles: 4,
-        method: :or_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0xB8,
-        mnemonic: 'CP B',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:b]
-      },
-      {
-        opcode: 0xB9,
-        mnemonic: 'CP C',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:c]
-      },
-      {
-        opcode: 0xBA,
-        mnemonic: 'CP D',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:d]
-      },
-      {
-        opcode: 0xBB,
-        mnemonic: 'CP E',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:e]
-      },
-      {
-        opcode: 0xBC,
-        mnemonic: 'CP H',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:h]
-      },
-      {
-        opcode: 0xBD,
-        mnemonic: 'CP L',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:l]
-      },
-      {
-        opcode: 0xBE,
-        mnemonic: 'CP (HL)',
-        length: 1,
-        cycles: 8,
-        method: :cp_mem_hl,
-        operands: []
-      },
-      {
-        opcode: 0xBF,
-        mnemonic: 'CP A',
-        length: 1,
-        cycles: 4,
-        method: :cp_r8,
-        operands: [:a]
-      },
-      {
-        opcode: 0xC0,
-        mnemonic: 'RET NZ',
-        length: 1,
-        cycles: [20, 8],
-        method: :ret_cond,
-        operands: [:nz]
-      },
-      {
-        opcode: 0xC1,
-        mnemonic: 'POP BC',
-        length: 1,
-        cycles: 12,
-        method: :pop_r16,
-        operands: [:bc=]
-      },
-      {
-        opcode: 0xC2,
-        mnemonic: 'JP NZ, a16',
-        length: 3,
-        cycles: [16, 12],
-        method: :jump_cond_a16,
-        operands: [:nz]
-      },
-      {
-        opcode: 0xC3,
-        mnemonic: 'JP a16',
-        length: 3,
-        cycles: 16,
-        method: :jump_a16,
-        operands: []
-      },
-      {
-        opcode: 0xC4,
-        mnemonic: 'CALL NZ, a16',
-        length: 3,
-        cycles: [24, 12],
-        method: :call_cond_a16,
-        operands: [:nz]
-      },
-      {
-        opcode: 0xC5,
-        mnemonic: 'PUSH BC',
-        length: 1,
-        cycles: 16,
-        method: :push_r16,
-        operands: [:bc]
-      },
-      {
-        opcode: 0xC6,
-        mnemonic: 'ADD A, d8',
-        length: 2,
-        cycles: 8,
-        method: :add_a_d8,
-        operands: []
-      },
-      {
-        opcode: 0xC7,
-        mnemonic: 'RST 00H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x00]
-      },
-      {
-        opcode: 0xC8,
-        mnemonic: 'RET Z',
-        length: 1,
-        cycles: [20, 8],
-        method: :ret_cond,
-        operands: [:z]
-      },
-      {
-        opcode: 0xC9,
-        mnemonic: 'RET',
-        length: 1,
-        cycles: 16,
-        method: :ret,
-        operands: []
-      },
-      {
-        opcode: 0xCA,
-        mnemonic: 'JP Z, a16',
-        length: 3,
-        cycles: [16, 12],
-        method: :jump_cond_a16,
-        operands: [:z]
-      },
-      {
-        opcode: 0xCB,
-        mnemonic: 'PREFIX',
-        length: 1,
-        cycles: 4,
-        method: :prefix,
-        operands: []
-      },
-      {
-        opcode: 0xCC,
-        mnemonic: 'CALL Z, a16',
-        length: 3,
-        cycles: [24, 12],
-        method: :call_cond_a16,
-        operands: [:z]
-      },
-      {
-        opcode: 0xCD,
-        mnemonic: 'CALL a16',
-        length: 3,
-        cycles: 24,
-        method: :call_a16,
-        operands: []
-      },
-      {
-        opcode: 0xCE,
-        mnemonic: 'ADC A, d8',
-        length: 2,
-        cycles: 8,
-        method: :adc_a_d8,
-        operands: []
-      },
-      {
-        opcode: 0xCF,
-        mnemonic: 'RST 08H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x08]
-      },
-      {
-        opcode: 0xD0,
-        mnemonic: 'RET NC',
-        length: 1,
-        cycles: [20, 8],
-        method: :ret_cond,
-        operands: [:nc]
-      },
-      {
-        opcode: 0xD1,
-        mnemonic: 'POP DE',
-        length: 1,
-        cycles: 12,
-        method: :pop_r16,
-        operands: [:de]
-      },
-      {
-        opcode: 0xD2,
-        mnemonic: 'JP NC, a16',
-        length: 3,
-        cycles: [16, 12],
-        method: :jump_cond_a16,
-        operands: [:nc]
-      },
-      {
-        opcode: 0xD3,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xD4,
-        mnemonic: 'CALL NC, a16',
-        length: 3,
-        cycles: [24, 12],
-        method: :call_cond_a16,
-        operands: [:nc]
-      },
-      {
-        opcode: 0xD5,
-        mnemonic: 'PUSH DE',
-        length: 1,
-        cycles: 16,
-        method: :push_r16,
-        operands: [:de]
-      },
-      {
-        opcode: 0xD6,
-        mnemonic: 'SUB d8',
-        length: 2,
-        cycles: 8,
-        method: :sub_d8,
-        operands: []
-      },
-      {
-        opcode: 0xD7,
-        mnemonic: 'RST 10H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x10]
-      },
-      {
-        opcode: 0xD8,
-        mnemonic: 'RET C',
-        length: 1,
-        cycles: [20, 8],
-        method: :ret_cond,
-        operands: [:c]
-      },
-      {
-        opcode: 0xD9,
-        mnemonic: 'RETI',
-        length: 1,
-        cycles: 16,
-        method: :reti,
-        operands: []
-      },
-      {
-        opcode: 0xDA,
-        mnemonic: 'JP C, a16',
-        length: 3,
-        cycles: [16, 12],
-        method: :jump_cond_a16,
-        operands: [:c]
-      },
-      {
-        opcode: 0xDB,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xDC,
-        mnemonic: 'CALL C, a16',
-        length: 3,
-        cycles: [24, 12],
-        method: :call_cond_a16,
-        operands: [:c]
-      },
-      {
-        opcode: 0xDD,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xDE,
-        mnemonic: 'SBC A, d8',
-        length: 2,
-        cycles: 8,
-        method: :sbc_a_d8,
-        operands: []
-      },
-      {
-        opcode: 0xDF,
-        mnemonic: 'RST 18H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x18]
-      },
-      {
-        opcode: 0xE0,
-        mnemonic: 'LDH (a8), A',
-        length: 2,
-        cycles: 12,
-        method: :load_high_mem_a,
-        operands: []
-      },
-      {
-        opcode: 0xE1,
-        mnemonic: 'POP HL',
-        length: 1,
-        cycles: 12,
-        method: :pop_r16,
-        operands: [:hl]
-      },
-      {
-        opcode: 0xE2,
-        mnemonic: 'LD (C), A',
-        length: 1,
-        cycles: 8,
-        method: :load_high_mem_c_a,
-        operands: []
-      },
-      {
-        opcode: 0xE3,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xE4,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xE5,
-        mnemonic: 'PUSH HL',
-        length: 1,
-        cycles: 16,
-        method: :push_r16,
-        operands: [:hl]
-      },
-      {
-        opcode: 0xE6,
-        mnemonic: 'AND d8',
-        length: 2,
-        cycles: 8,
-        method: :and_d8,
-        operands: []
-      },
-      {
-        opcode: 0xE7,
-        mnemonic: 'RST 20H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x20]
-      },
-      {
-        opcode: 0xE8,
-        mnemonic: 'ADD SP, r8',
-        length: 2,
-        cycles: 16,
-        method: :add_sp_r8,
-        operands: []
-      },
-      {
-        opcode: 0xE9,
-        mnemonic: 'JP HL',
-        length: 1,
-        cycles: 4,
-        method: :jump_hl,
-        operands: []
-      },
-      {
-        opcode: 0xEA,
-        mnemonic: 'LD (a16), A',
-        length: 3,
-        cycles: 16,
-        method: :load_mem_a16_a,
-        operands: []
-      },
-      {
-        opcode: 0xEB,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xEC,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xED,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xEE,
-        mnemonic: 'XOR d8',
-        length: 2,
-        cycles: 8,
-        method: :xor_d8,
-        operands: []
-      },
-      {
-        opcode: 0xEF,
-        mnemonic: 'RST 28H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x28]
-      },
-      {
-        opcode: 0xF0,
-        mnemonic: 'LDH A, (a8)',
-        length: 2,
-        cycles: 12,
-        method: :load_a_high_mem,
-        operands: []
-      },
-      {
-        opcode: 0xF1,
-        mnemonic: 'POP AF',
-        length: 1,
-        cycles: 12,
-        method: :pop_r16,
-        operands: [:af]
-      },
-      {
-        opcode: 0xF2,
-        mnemonic: 'LD A, (C)',
-        length: 1,
-        cycles: 8,
-        method: :load_a_high_mem_c,
-        operands: []
-      },
-      {
-        opcode: 0xF3,
-        mnemonic: 'DI',
-        length: 1,
-        cycles: 4,
-        method: :di,
-        operands: []
-      },
-      {
-        opcode: 0xF4,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xF5,
-        mnemonic: 'PUSH AF',
-        length: 1,
-        cycles: 16,
-        method: :push_r16,
-        operands: [:af]
-      },
-      {
-        opcode: 0xF6,
-        mnemonic: 'OR d8',
-        length: 2,
-        cycles: 8,
-        method: :or_d8,
-        operands: []
-      },
-      {
-        opcode: 0xF7,
-        mnemonic: 'RST 30H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x30]
-      },
-      {
-        opcode: 0xF8,
-        mnemonic: 'LD HL, SP+r8',
-        length: 2,
-        cycles: 12,
-        method: :load_hl_sp_r8,
-        operands: []
-      },
-      {
-        opcode: 0xF9,
-        mnemonic: 'LD SP, HL',
-        length: 1,
-        cycles: 8,
-        method: :load_sp_hl,
-        operands: []
-      },
-      {
-        opcode: 0xFA,
-        mnemonic: 'LD A, (a16)',
-        length: 3,
-        cycles: 16,
-        method: :load_a_mem_a16,
-        operands: []
-      },
-      {
-        opcode: 0xFB,
-        mnemonic: 'EI',
-        length: 1,
-        cycles: 4,
-        method: :ei,
-        operands: []
-      },
-      {
-        opcode: 0xFC,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xFD,
-        mnemonic: 'UNUSED',
-        length: 0,
-        cycles: 0,
-        method: :unused,
-        operands: []
-      },
-      {
-        opcode: 0xFE,
-        mnemonic: 'CP d8',
-        length: 2,
-        cycles: 8,
-        method: :cp_d8,
-        operands: []
-      },
-      {
-        opcode: 0xFF,
-        mnemonic: 'RST 38H',
-        length: 1,
-        cycles: 16,
-        method: :rst,
-        operands: [0x38]
-      }
+      { opcode: 0x00, mnemonic: 'NOP', length: 1, cycles: 4, method: :nop, operands: [] },
+      { opcode: 0x01, mnemonic: 'LD BC, d16', length: 3, cycles: 12, method: :load_r16_d16, operands: %i[bc d16] },
+      { opcode: 0x02, mnemonic: 'LD (BC), A', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[bc a] },
+      { opcode: 0x03, mnemonic: 'INC BC', length: 1, cycles: 8, method: :inc_r16, operands: [:bc] },
+      { opcode: 0x04, mnemonic: 'INC B', length: 1, cycles: 4, method: :inc_r8, operands: [:b] },
+      { opcode: 0x05, mnemonic: 'DEC B', length: 1, cycles: 4, method: :dec_r8, operands: [:b] },
+      { opcode: 0x06, mnemonic: 'LD B, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:b] },
+      { opcode: 0x07, mnemonic: 'RLCA', length: 1, cycles: 4, method: :rlca, operands: [] },
+      { opcode: 0x08, mnemonic: 'LD (a16), SP', length: 3, cycles: 20, method: :load_mem_sp, operands: %i[a16 sp] },
+      { opcode: 0x09, mnemonic: 'ADD HL, BC', length: 1, cycles: 8, method: :add_hl_r16, operands: [:bc] },
+      { opcode: 0x0A, mnemonic: 'LD A, (BC)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[a bc] },
+      { opcode: 0x0B, mnemonic: 'DEC BC', length: 1, cycles: 8, method: :dec_r16, operands: [:bc] },
+      { opcode: 0x0C, mnemonic: 'INC C', length: 1, cycles: 4, method: :inc_r8, operands: [:c] },
+      { opcode: 0x0D, mnemonic: 'DEC C', length: 1, cycles: 4, method: :dec_r8, operands: [:c] },
+      { opcode: 0x0E, mnemonic: 'LD C, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:c] },
+      { opcode: 0x0F, mnemonic: 'RRCA', length: 1, cycles: 4, method: :rrca, operands: [] },
+      { opcode: 0x10, mnemonic: 'STOP', length: 2, cycles: 4, method: :stop, operands: [] },
+      { opcode: 0x11, mnemonic: 'LD DE, d16', length: 3, cycles: 12, method: :load_r16_d16, operands: %i[de d16] },
+      { opcode: 0x12, mnemonic: 'LD (DE), A', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[de a] },
+      { opcode: 0x13, mnemonic: 'INC DE', length: 1, cycles: 8, method: :inc_r16, operands: [:de] },
+      { opcode: 0x14, mnemonic: 'INC D', length: 1, cycles: 4, method: :inc_r8, operands: [:d] },
+      { opcode: 0x15, mnemonic: 'DEC D', length: 1, cycles: 4, method: :dec_r8, operands: [:d] },
+      { opcode: 0x16, mnemonic: 'LD D, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:d] },
+      { opcode: 0x17, mnemonic: 'RLA', length: 1, cycles: 4, method: :rla, operands: [] },
+      { opcode: 0x18, mnemonic: 'JR r8', length: 2, cycles: 12, method: :jump_relative, operands: [] },
+      { opcode: 0x19, mnemonic: 'ADD HL, DE', length: 1, cycles: 8, method: :add_hl_r16, operands: [:de] },
+      { opcode: 0x1A, mnemonic: 'LD A, (DE)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[a de] },
+      { opcode: 0x1B, mnemonic: 'DEC DE', length: 1, cycles: 8, method: :dec_r16, operands: [:de] },
+      { opcode: 0x1C, mnemonic: 'INC E', length: 1, cycles: 4, method: :inc_r8, operands: [:e] },
+      { opcode: 0x1D, mnemonic: 'DEC E', length: 1, cycles: 4, method: :dec_r8, operands: [:e] },
+      { opcode: 0x1E, mnemonic: 'LD E, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:e] },
+      { opcode: 0x1F, mnemonic: 'RRA', length: 1, cycles: 4, method: :rra, operands: [] },
+      { opcode: 0x20, mnemonic: 'JR NZ, r8', length: 2, cycles: [12, 8], method: :jump_relative_cond, operands: [:nz] },
+      { opcode: 0x21, mnemonic: 'LD HL, d16', length: 3, cycles: 12, method: :load_r16_d16, operands: %i[hl d16] },
+      { opcode: 0x22, mnemonic: 'LD (HL+), A', length: 1, cycles: 8, method: :load_mem_inc_hl, operands: [:a] },
+      { opcode: 0x23, mnemonic: 'INC HL', length: 1, cycles: 8, method: :inc_r16, operands: [:hl] },
+      { opcode: 0x24, mnemonic: 'INC H', length: 1, cycles: 4, method: :inc_r8, operands: [:h] },
+      { opcode: 0x25, mnemonic: 'DEC H', length: 1, cycles: 4, method: :dec_r8, operands: [:h] },
+      { opcode: 0x26, mnemonic: 'LD H, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:h] },
+      { opcode: 0x27, mnemonic: 'DAA', length: 1, cycles: 4, method: :daa, operands: [] },
+      { opcode: 0x28, mnemonic: 'JR Z, r8', length: 2, cycles: [12, 8], method: :jump_relative_cond, operands: [:z] },
+      { opcode: 0x29, mnemonic: 'ADD HL, HL', length: 1, cycles: 8, method: :add_hl_r16, operands: [:hl] },
+      { opcode: 0x2A, mnemonic: 'LD A, (HL+)', length: 1, cycles: 8, method: :load_r8_mem_inc_hl, operands: [] },
+      { opcode: 0x2B, mnemonic: 'DEC HL', length: 1, cycles: 8, method: :dec_r16, operands: [:hl] },
+      { opcode: 0x2C, mnemonic: 'INC L', length: 1, cycles: 4, method: :inc_r8, operands: [:l] },
+      { opcode: 0x2D, mnemonic: 'DEC L', length: 1, cycles: 4, method: :dec_r8, operands: [:l] },
+      { opcode: 0x2E, mnemonic: 'LD L, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:l] },
+      { opcode: 0x2F, mnemonic: 'CPL', length: 1, cycles: 4, method: :cpl, operands: [] },
+      { opcode: 0x30, mnemonic: 'JR NC, r8', length: 2, cycles: [12, 8], method: :jump_relative_cond, operands: [:nc] },
+      { opcode: 0x31, mnemonic: 'LD SP, d16', length: 3, cycles: 12, method: :load_r16_d16, operands: %i[sp d16] },
+      { opcode: 0x32, mnemonic: 'LD (HL-), A', length: 1, cycles: 8, method: :load_mem_dec_hl, operands: [:a] },
+      { opcode: 0x33, mnemonic: 'INC SP', length: 1, cycles: 8, method: :inc_r16, operands: [:sp] },
+      { opcode: 0x34, mnemonic: 'INC (HL)', length: 1, cycles: 12, method: :inc_mem_hl, operands: [] },
+      { opcode: 0x35, mnemonic: 'DEC (HL)', length: 1, cycles: 12, method: :dec_mem_hl, operands: [] },
+      { opcode: 0x36, mnemonic: 'LD (HL), d8', length: 2, cycles: 12, method: :load_mem_d8, operands: [] },
+      { opcode: 0x37, mnemonic: 'SCF', length: 1, cycles: 4, method: :scf, operands: [] },
+      { opcode: 0x38, mnemonic: 'JR C, r8', length: 2, cycles: [12, 8], method: :jump_relative_cond, operands: [:c] },
+      { opcode: 0x39, mnemonic: 'ADD HL, SP', length: 1, cycles: 8, method: :add_hl_r16, operands: [:sp] },
+      { opcode: 0x3A, mnemonic: 'LD A, (HL-)', length: 1, cycles: 8, method: :load_r8_mem_dec_hl, operands: [] },
+      { opcode: 0x3B, mnemonic: 'DEC SP', length: 1, cycles: 8, method: :dec_r16, operands: [:sp] },
+      { opcode: 0x3C, mnemonic: 'INC A', length: 1, cycles: 4, method: :inc_r8, operands: [:a] },
+      { opcode: 0x3D, mnemonic: 'DEC A', length: 1, cycles: 4, method: :dec_r8, operands: [:a] },
+      { opcode: 0x3E, mnemonic: 'LD A, d8', length: 2, cycles: 8, method: :load_r8_d8, operands: [:a] },
+      { opcode: 0x3F, mnemonic: 'CCF', length: 1, cycles: 4, method: :ccf, operands: [] },
+      { opcode: 0x40, mnemonic: 'LD B, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b b] },
+      { opcode: 0x41, mnemonic: 'LD B, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b c] },
+      { opcode: 0x42, mnemonic: 'LD B, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b d] },
+      { opcode: 0x43, mnemonic: 'LD B, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b e] },
+      { opcode: 0x44, mnemonic: 'LD B, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b h] },
+      { opcode: 0x45, mnemonic: 'LD B, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b l] },
+      { opcode: 0x46, mnemonic: 'LD B, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[b hl] },
+      { opcode: 0x47, mnemonic: 'LD B, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[b a] },
+      { opcode: 0x48, mnemonic: 'LD C, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c b] },
+      { opcode: 0x49, mnemonic: 'LD C, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c c] },
+      { opcode: 0x4A, mnemonic: 'LD C, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c d] },
+      { opcode: 0x4B, mnemonic: 'LD C, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c e] },
+      { opcode: 0x4C, mnemonic: 'LD C, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c h] },
+      { opcode: 0x4D, mnemonic: 'LD C, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c l] },
+      { opcode: 0x4E, mnemonic: 'LD C, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[c hl] },
+      { opcode: 0x4F, mnemonic: 'LD C, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[c a] },
+      { opcode: 0x50, mnemonic: 'LD D, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d b] },
+      { opcode: 0x51, mnemonic: 'LD D, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d c] },
+      { opcode: 0x52, mnemonic: 'LD D, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d d] },
+      { opcode: 0x53, mnemonic: 'LD D, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d e] },
+      { opcode: 0x54, mnemonic: 'LD D, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d h] },
+      { opcode: 0x55, mnemonic: 'LD D, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d l] },
+      { opcode: 0x56, mnemonic: 'LD D, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[d hl] },
+      { opcode: 0x57, mnemonic: 'LD D, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[d a] },
+      { opcode: 0x58, mnemonic: 'LD E, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e b] },
+      { opcode: 0x59, mnemonic: 'LD E, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e c] },
+      { opcode: 0x5A, mnemonic: 'LD E, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e d] },
+      { opcode: 0x5B, mnemonic: 'LD E, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e e] },
+      { opcode: 0x5C, mnemonic: 'LD E, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e h] },
+      { opcode: 0x5D, mnemonic: 'LD E, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e l] },
+      { opcode: 0x5E, mnemonic: 'LD E, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[e hl] },
+      { opcode: 0x5F, mnemonic: 'LD E, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[e a] },
+      { opcode: 0x60, mnemonic: 'LD H, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h b] },
+      { opcode: 0x61, mnemonic: 'LD H, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h c] },
+      { opcode: 0x62, mnemonic: 'LD H, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h d] },
+      { opcode: 0x63, mnemonic: 'LD H, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h e] },
+      { opcode: 0x64, mnemonic: 'LD H, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h h] },
+      { opcode: 0x65, mnemonic: 'LD H, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h l] },
+      { opcode: 0x66, mnemonic: 'LD H, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[h hl] },
+      { opcode: 0x67, mnemonic: 'LD H, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[h a] },
+      { opcode: 0x68, mnemonic: 'LD L, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l b] },
+      { opcode: 0x69, mnemonic: 'LD L, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l c] },
+      { opcode: 0x6A, mnemonic: 'LD L, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l d] },
+      { opcode: 0x6B, mnemonic: 'LD L, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l e] },
+      { opcode: 0x6C, mnemonic: 'LD L, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l h] },
+      { opcode: 0x6D, mnemonic: 'LD L, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l l] },
+      { opcode: 0x6E, mnemonic: 'LD L, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[l hl] },
+      { opcode: 0x6F, mnemonic: 'LD L, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[l a] },
+      { opcode: 0x70, mnemonic: 'LD (HL), B', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl b] },
+      { opcode: 0x71, mnemonic: 'LD (HL), C', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl c] },
+      { opcode: 0x72, mnemonic: 'LD (HL), D', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl d] },
+      { opcode: 0x73, mnemonic: 'LD (HL), E', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl e] },
+      { opcode: 0x74, mnemonic: 'LD (HL), H', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl h] },
+      { opcode: 0x75, mnemonic: 'LD (HL), L', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl l] },
+      { opcode: 0x76, mnemonic: 'HALT', length: 1, cycles: 4, method: :halt, operands: [] },
+      { opcode: 0x77, mnemonic: 'LD (HL), A', length: 1, cycles: 8, method: :load_mem_r8, operands: %i[hl a] },
+      { opcode: 0x78, mnemonic: 'LD A, B', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a b] },
+      { opcode: 0x79, mnemonic: 'LD A, C', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a c] },
+      { opcode: 0x7A, mnemonic: 'LD A, D', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a d] },
+      { opcode: 0x7B, mnemonic: 'LD A, E', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a e] },
+      { opcode: 0x7C, mnemonic: 'LD A, H', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a h] },
+      { opcode: 0x7D, mnemonic: 'LD A, L', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a l] },
+      { opcode: 0x7E, mnemonic: 'LD A, (HL)', length: 1, cycles: 8, method: :load_r8_mem, operands: %i[a hl] },
+      { opcode: 0x7F, mnemonic: 'LD A, A', length: 1, cycles: 4, method: :load_r8_r8, operands: %i[a a] },
+      { opcode: 0x80, mnemonic: 'ADD A, B', length: 1, cycles: 4, method: :add_a_r8, operands: [:b] },
+      { opcode: 0x81, mnemonic: 'ADD A, C', length: 1, cycles: 4, method: :add_a_r8, operands: [:c] },
+      { opcode: 0x82, mnemonic: 'ADD A, D', length: 1, cycles: 4, method: :add_a_r8, operands: [:d] },
+      { opcode: 0x83, mnemonic: 'ADD A, E', length: 1, cycles: 4, method: :add_a_r8, operands: [:e] },
+      { opcode: 0x84, mnemonic: 'ADD A, H', length: 1, cycles: 4, method: :add_a_r8, operands: [:h] },
+      { opcode: 0x85, mnemonic: 'ADD A, L', length: 1, cycles: 4, method: :add_a_r8, operands: [:l] },
+      { opcode: 0x86, mnemonic: 'ADD A, (HL)', length: 1, cycles: 8, method: :add_a_mem_hl, operands: [] },
+      { opcode: 0x87, mnemonic: 'ADD A, A', length: 1, cycles: 4, method: :add_a_r8, operands: [:a] },
+      { opcode: 0x88, mnemonic: 'ADC A, B', length: 1, cycles: 4, method: :adc_a_r8, operands: [:b] },
+      { opcode: 0x89, mnemonic: 'ADC A, C', length: 1, cycles: 4, method: :adc_a_r8, operands: [:c] },
+      { opcode: 0x8A, mnemonic: 'ADC A, D', length: 1, cycles: 4, method: :adc_a_r8, operands: [:d] },
+      { opcode: 0x8B, mnemonic: 'ADC A, E', length: 1, cycles: 4, method: :adc_a_r8, operands: [:e] },
+      { opcode: 0x8C, mnemonic: 'ADC A, H', length: 1, cycles: 4, method: :adc_a_r8, operands: [:h] },
+      { opcode: 0x8D, mnemonic: 'ADC A, L', length: 1, cycles: 4, method: :adc_a_r8, operands: [:l] },
+      { opcode: 0x8E, mnemonic: 'ADC A, (HL)', length: 1, cycles: 8, method: :adc_a_mem_hl, operands: [] },
+      { opcode: 0x8F, mnemonic: 'ADC A, A', length: 1, cycles: 4, method: :adc_a_r8, operands: [:a] },
+      { opcode: 0x90, mnemonic: 'SUB B', length: 1, cycles: 4, method: :sub_r8, operands: [:b] },
+      { opcode: 0x91, mnemonic: 'SUB C', length: 1, cycles: 4, method: :sub_r8, operands: [:c] },
+      { opcode: 0x92, mnemonic: 'SUB D', length: 1, cycles: 4, method: :sub_r8, operands: [:d] },
+      { opcode: 0x93, mnemonic: 'SUB E', length: 1, cycles: 4, method: :sub_r8, operands: [:e] },
+      { opcode: 0x94, mnemonic: 'SUB H', length: 1, cycles: 4, method: :sub_r8, operands: [:h] },
+      { opcode: 0x95, mnemonic: 'SUB L', length: 1, cycles: 4, method: :sub_r8, operands: [:l] },
+      { opcode: 0x96, mnemonic: 'SUB (HL)', length: 1, cycles: 8, method: :sub_mem_hl, operands: [] },
+      { opcode: 0x97, mnemonic: 'SUB A', length: 1, cycles: 4, method: :sub_r8, operands: [:a] },
+      { opcode: 0x98, mnemonic: 'SBC A, B', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:b] },
+      { opcode: 0x99, mnemonic: 'SBC A, C', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:c] },
+      { opcode: 0x9A, mnemonic: 'SBC A, D', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:d] },
+      { opcode: 0x9B, mnemonic: 'SBC A, E', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:e] },
+      { opcode: 0x9C, mnemonic: 'SBC A, H', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:h] },
+      { opcode: 0x9D, mnemonic: 'SBC A, L', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:l] },
+      { opcode: 0x9E, mnemonic: 'SBC A, (HL)', length: 1, cycles: 8, method: :sbc_a_mem_hl, operands: [] },
+      { opcode: 0x9F, mnemonic: 'SBC A, A', length: 1, cycles: 4, method: :sbc_a_r8, operands: [:a] },
+      { opcode: 0xA0, mnemonic: 'AND B', length: 1, cycles: 4, method: :and_r8, operands: [:b] },
+      { opcode: 0xA1, mnemonic: 'AND C', length: 1, cycles: 4, method: :and_r8, operands: [:c] },
+      { opcode: 0xA2, mnemonic: 'AND D', length: 1, cycles: 4, method: :and_r8, operands: [:d] },
+      { opcode: 0xA3, mnemonic: 'AND E', length: 1, cycles: 4, method: :and_r8, operands: [:e] },
+      { opcode: 0xA4, mnemonic: 'AND H', length: 1, cycles: 4, method: :and_r8, operands: [:h] },
+      { opcode: 0xA5, mnemonic: 'AND L', length: 1, cycles: 4, method: :and_r8, operands: [:l] },
+      { opcode: 0xA6, mnemonic: 'AND (HL)', length: 1, cycles: 8, method: :and_mem_hl, operands: [] },
+      { opcode: 0xA7, mnemonic: 'AND A', length: 1, cycles: 4, method: :and_r8, operands: [:a] },
+      { opcode: 0xA8, mnemonic: 'XOR B', length: 1, cycles: 4, method: :xor_r, operands: [:b] },
+      { opcode: 0xA9, mnemonic: 'XOR C', length: 1, cycles: 4, method: :xor_r, operands: [:c] },
+      { opcode: 0xAA, mnemonic: 'XOR D', length: 1, cycles: 4, method: :xor_r, operands: [:d] },
+      { opcode: 0xAB, mnemonic: 'XOR E', length: 1, cycles: 4, method: :xor_r, operands: [:e] },
+      { opcode: 0xAC, mnemonic: 'XOR H', length: 1, cycles: 4, method: :xor_r, operands: [:h] },
+      { opcode: 0xAD, mnemonic: 'XOR L', length: 1, cycles: 4, method: :xor_r, operands: [:l] },
+      { opcode: 0xAE, mnemonic: 'XOR (HL)', length: 1, cycles: 8, method: :xor_mem_hl, operands: [] },
+      { opcode: 0xAF, mnemonic: 'XOR A', length: 1, cycles: 4, method: :xor_r, operands: [:a] },
+      { opcode: 0xB0, mnemonic: 'OR B', length: 1, cycles: 4, method: :or_r8, operands: [:b] },
+      { opcode: 0xB1, mnemonic: 'OR C', length: 1, cycles: 4, method: :or_r8, operands: [:c] },
+      { opcode: 0xB2, mnemonic: 'OR D', length: 1, cycles: 4, method: :or_r8, operands: [:d] },
+      { opcode: 0xB3, mnemonic: 'OR E', length: 1, cycles: 4, method: :or_r8, operands: [:e] },
+      { opcode: 0xB4, mnemonic: 'OR H', length: 1, cycles: 4, method: :or_r8, operands: [:h] },
+      { opcode: 0xB5, mnemonic: 'OR L', length: 1, cycles: 4, method: :or_r8, operands: [:l] },
+      { opcode: 0xB6, mnemonic: 'OR (HL)', length: 1, cycles: 8, method: :or_mem_hl, operands: [] },
+      { opcode: 0xB7, mnemonic: 'OR A', length: 1, cycles: 4, method: :or_r8, operands: [:a] },
+      { opcode: 0xB8, mnemonic: 'CP B', length: 1, cycles: 4, method: :cp_r8, operands: [:b] },
+      { opcode: 0xB9, mnemonic: 'CP C', length: 1, cycles: 4, method: :cp_r8, operands: [:c] },
+      { opcode: 0xBA, mnemonic: 'CP D', length: 1, cycles: 4, method: :cp_r8, operands: [:d] },
+      { opcode: 0xBB, mnemonic: 'CP E', length: 1, cycles: 4, method: :cp_r8, operands: [:e] },
+      { opcode: 0xBC, mnemonic: 'CP H', length: 1, cycles: 4, method: :cp_r8, operands: [:h] },
+      { opcode: 0xBD, mnemonic: 'CP L', length: 1, cycles: 4, method: :cp_r8, operands: [:l] },
+      { opcode: 0xBE, mnemonic: 'CP (HL)', length: 1, cycles: 8, method: :cp_mem_hl, operands: [] },
+      { opcode: 0xBF, mnemonic: 'CP A', length: 1, cycles: 4, method: :cp_r8, operands: [:a] },
+      { opcode: 0xC0, mnemonic: 'RET NZ', length: 1, cycles: [20, 8], method: :ret_cond, operands: [:nz] },
+      { opcode: 0xC1, mnemonic: 'POP BC', length: 1, cycles: 12, method: :pop_r16, operands: [:bc=] },
+      { opcode: 0xC2, mnemonic: 'JP NZ, a16', length: 3, cycles: [16, 12], method: :jump_cond_a16, operands: [:nz] },
+      { opcode: 0xC3, mnemonic: 'JP a16', length: 3, cycles: 16, method: :jump_a16, operands: [] },
+      { opcode: 0xC4, mnemonic: 'CALL NZ, a16', length: 3, cycles: [24, 12], method: :call_cond_a16, operands: [:nz] },
+      { opcode: 0xC5, mnemonic: 'PUSH BC', length: 1, cycles: 16, method: :push_r16, operands: [:bc] },
+      { opcode: 0xC6, mnemonic: 'ADD A, d8', length: 2, cycles: 8, method: :add_a_d8, operands: [] },
+      { opcode: 0xC7, mnemonic: 'RST 00H', length: 1, cycles: 16, method: :rst, operands: [0x00] },
+      { opcode: 0xC8, mnemonic: 'RET Z', length: 1, cycles: [20, 8], method: :ret_cond, operands: [:z] },
+      { opcode: 0xC9, mnemonic: 'RET', length: 1, cycles: 16, method: :ret, operands: [] },
+      { opcode: 0xCA, mnemonic: 'JP Z, a16', length: 3, cycles: [16, 12], method: :jump_cond_a16, operands: [:z] },
+      { opcode: 0xCB, mnemonic: 'PREFIX', length: 1, cycles: 4, method: :prefix, operands: [] },
+      { opcode: 0xCC, mnemonic: 'CALL Z, a16', length: 3, cycles: [24, 12], method: :call_cond_a16, operands: [:z] },
+      { opcode: 0xCD, mnemonic: 'CALL a16', length: 3, cycles: 24, method: :call_a16, operands: [] },
+      { opcode: 0xCE, mnemonic: 'ADC A, d8', length: 2, cycles: 8, method: :adc_a_d8, operands: [] },
+      { opcode: 0xCF, mnemonic: 'RST 08H', length: 1, cycles: 16, method: :rst, operands: [0x08] },
+      { opcode: 0xD0, mnemonic: 'RET NC', length: 1, cycles: [20, 8], method: :ret_cond, operands: [:nc] },
+      { opcode: 0xD1, mnemonic: 'POP DE', length: 1, cycles: 12, method: :pop_r16, operands: [:de] },
+      { opcode: 0xD2, mnemonic: 'JP NC, a16', length: 3, cycles: [16, 12], method: :jump_cond_a16, operands: [:nc] },
+      { opcode: 0xD3, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xD4, mnemonic: 'CALL NC, a16', length: 3, cycles: [24, 12], method: :call_cond_a16, operands: [:nc] },
+      { opcode: 0xD5, mnemonic: 'PUSH DE', length: 1, cycles: 16, method: :push_r16, operands: [:de] },
+      { opcode: 0xD6, mnemonic: 'SUB d8', length: 2, cycles: 8, method: :sub_d8, operands: [] },
+      { opcode: 0xD7, mnemonic: 'RST 10H', length: 1, cycles: 16, method: :rst, operands: [0x10] },
+      { opcode: 0xD8, mnemonic: 'RET C', length: 1, cycles: [20, 8], method: :ret_cond, operands: [:c] },
+      { opcode: 0xD9, mnemonic: 'RETI', length: 1, cycles: 16, method: :reti, operands: [] },
+      { opcode: 0xDA, mnemonic: 'JP C, a16', length: 3, cycles: [16, 12], method: :jump_cond_a16, operands: [:c] },
+      { opcode: 0xDB, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xDC, mnemonic: 'CALL C, a16', length: 3, cycles: [24, 12], method: :call_cond_a16, operands: [:c] },
+      { opcode: 0xDD, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xDE, mnemonic: 'SBC A, d8', length: 2, cycles: 8, method: :sbc_a_d8, operands: [] },
+      { opcode: 0xDF, mnemonic: 'RST 18H', length: 1, cycles: 16, method: :rst, operands: [0x18] },
+      { opcode: 0xE0, mnemonic: 'LDH (a8), A', length: 2, cycles: 12, method: :load_high_mem_a, operands: [] },
+      { opcode: 0xE1, mnemonic: 'POP HL', length: 1, cycles: 12, method: :pop_r16, operands: [:hl] },
+      { opcode: 0xE2, mnemonic: 'LD (C), A', length: 1, cycles: 8, method: :load_high_mem_c_a, operands: [] },
+      { opcode: 0xE3, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xE4, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xE5, mnemonic: 'PUSH HL', length: 1, cycles: 16, method: :push_r16, operands: [:hl] },
+      { opcode: 0xE6, mnemonic: 'AND d8', length: 2, cycles: 8, method: :and_d8, operands: [] },
+      { opcode: 0xE7, mnemonic: 'RST 20H', length: 1, cycles: 16, method: :rst, operands: [0x20] },
+      { opcode: 0xE8, mnemonic: 'ADD SP, r8', length: 2, cycles: 16, method: :add_sp_r8, operands: [] },
+      { opcode: 0xE9, mnemonic: 'JP HL', length: 1, cycles: 4, method: :jump_hl, operands: [] },
+      { opcode: 0xEA, mnemonic: 'LD (a16), A', length: 3, cycles: 16, method: :load_mem_a16_a, operands: [] },
+      { opcode: 0xEB, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xEC, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xED, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xEE, mnemonic: 'XOR d8', length: 2, cycles: 8, method: :xor_d8, operands: [] },
+      { opcode: 0xEF, mnemonic: 'RST 28H', length: 1, cycles: 16, method: :rst, operands: [0x28] },
+      { opcode: 0xF0, mnemonic: 'LDH A, (a8)', length: 2, cycles: 12, method: :load_a_high_mem, operands: [] },
+      { opcode: 0xF1, mnemonic: 'POP AF', length: 1, cycles: 12, method: :pop_r16, operands: [:af] },
+      { opcode: 0xF2, mnemonic: 'LD A, (C)', length: 1, cycles: 8, method: :load_a_high_mem_c, operands: [] },
+      { opcode: 0xF3, mnemonic: 'DI', length: 1, cycles: 4, method: :di, operands: [] },
+      { opcode: 0xF4, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xF5, mnemonic: 'PUSH AF', length: 1, cycles: 16, method: :push_r16, operands: [:af] },
+      { opcode: 0xF6, mnemonic: 'OR d8', length: 2, cycles: 8, method: :or_d8, operands: [] },
+      { opcode: 0xF7, mnemonic: 'RST 30H', length: 1, cycles: 16, method: :rst, operands: [0x30] },
+      { opcode: 0xF8, mnemonic: 'LD HL, SP+r8', length: 2, cycles: 12, method: :load_hl_sp_r8, operands: [] },
+      { opcode: 0xF9, mnemonic: 'LD SP, HL', length: 1, cycles: 8, method: :load_sp_hl, operands: [] },
+      { opcode: 0xFA, mnemonic: 'LD A, (a16)', length: 3, cycles: 16, method: :load_a_mem_a16, operands: [] },
+      { opcode: 0xFB, mnemonic: 'EI', length: 1, cycles: 4, method: :ei, operands: [] },
+      { opcode: 0xFC, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xFD, mnemonic: 'UNUSED', length: 0, cycles: 0, method: :unused, operands: [] },
+      { opcode: 0xFE, mnemonic: 'CP d8', length: 2, cycles: 8, method: :cp_d8, operands: [] },
+      { opcode: 0xFF, mnemonic: 'RST 38H', length: 1, cycles: 16, method: :rst, operands: [0x38] }
     ].freeze
   end
 end
