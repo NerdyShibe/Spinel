@@ -29,6 +29,15 @@ module Spinel
       def initialize(cartridge)
         @cartridge = cartridge
         @locked = false
+        @latch = 0
+      end
+
+      def request_read(address)
+        @latch = read_byte(address)
+      end
+
+      def return_data
+        @latch
       end
 
       # Delegates which component should be involved

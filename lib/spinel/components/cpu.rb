@@ -36,14 +36,15 @@ module Spinel
 
         puts "$#{format('%04X', @registers.pc)} Tick #{@ticks}"
 
-        if @ticks == 1
-          @opcode = fetch_byte
-          @instruction = Data::CPU_INSTRUCTIONS[@opcode]
-        else
-          execute_instruction
+        # First machine cycle (t-cycles 1-4)
+        case @ticks
+        when 1 then request_read
+        when 2..3 then wait
+        when 4 then receive_data && execute
+        else execute
         end
 
-        if @ticks == @instruction[:cycles]
+        if @instruction && @ticks == @instruction[:cycles]
           reset_states
         else
           @ticks += 1
@@ -52,21 +53,26 @@ module Spinel
 
       private
 
-      def fetch_byte
-        byte = @bus.read_byte(@registers.pc)
-        if @ticks == 1
-          puts "Fetched opcode: 0x#{format('%02X', byte)} Starting instruction..."
-        else
-          puts "Fetched byte: 0x#{format('%02X', byte)}..."
-        end
-        @registers.pc += 1
-
-        byte
+      def request_read
+        puts 'Requesting read from the bus...'
+        @bus.request_read(@registers.pc)
+        @bus.locked = true
       end
 
-      def execute_instruction
-        send(@instruction[:method], @instruction[:operands]) if @instruction[:operands].any?
-        send(@instruction[:method])
+      def receive_data
+        @opcode = @bus.return_data
+        puts "Data received from the bus: 0x#{format('%02X', @opcode)}"
+        @bus.locked = false
+        @instruction = Data::CPU_INSTRUCTIONS[@opcode]
+        @registers.pc += 1
+      end
+
+      def execute
+        if @instruction[:operands].any?
+          send(@instruction[:method], *@instruction[:operands])
+        else
+          send(@instruction[:method])
+        end
       end
 
       def reset_states
