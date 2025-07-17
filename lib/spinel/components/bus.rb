@@ -69,6 +69,8 @@ module Spinel
         case address
         when 0x0000..0x7FFF
           @cartridge.write_byte(address, byte)
+        when 0x8000..0x9FFF
+          @vram.write_byte(address, byte)
         else
           raise('This part of memory was not mapped yet')
         end
