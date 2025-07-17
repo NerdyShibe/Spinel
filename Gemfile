@@ -4,10 +4,11 @@ source 'https://rubygems.org'
 
 ruby '3.4.4'
 
-group :development, :test do
+group :development do
   gem 'debug'
+end
+
+group :test do
   gem 'rspec'
-  gem 'rubocop'
-  gem 'rubocop-rspec'
   gem 'simplecov'
 end
