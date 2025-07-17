@@ -34,8 +34,6 @@ module Spinel
       def tick
         return false if @halted
 
-        puts "$#{format('%04X', @registers.pc)} Tick #{@ticks}"
-
         # First machine cycle (t-cycles 1-4)
         case @ticks
         when 1 then request_read
@@ -53,9 +51,9 @@ module Spinel
 
       private
 
-      def request_read
+      def request_read(address = @registers.pc)
         puts 'Requesting read from the bus...'
-        @bus.request_read(@registers.pc)
+        @bus.request_read(address)
         @bus.locked = true
       end
 
@@ -81,7 +79,25 @@ module Spinel
         @opcode = nil
 
         puts 'Current instruction is now completed, resetting states...'
-        puts "=====================================================================\n\n"
+        puts "==========================================================================================================================================\n\n"
+      end
+
+      def print_info
+        @test_instruction = Data::CPU_INSTRUCTIONS[@bus.read_byte(@registers.pc)]
+        puts "$#{format('%04X', @registers.pc)}:  " \
+          "(#{format('%02X', @bus.read_byte(@registers.pc))} "\
+          "#{format('%02X', @bus.read_byte(@registers.pc + 1))} "\
+          "#{format('%02X', @bus.read_byte(@registers.pc + 2))})  " \
+          "A: #{format('%08B', @registers.a)}, " \
+          "F: #{format('%08B', @registers.f)}, " \
+          "B: #{format('%08B', @registers.b)}, " \
+          "C: #{format('%08B', @registers.c)}, " \
+          "D: #{format('%08B', @registers.d)}, " \
+          "E: #{format('%08B', @registers.e)}, " \
+          "H: #{format('%08B', @registers.h)}, " \
+          "L: #{format('%08B', @registers.l)},  " \
+          "#{@test_instruction[:mnemonic]} " \
+          "#{@ticks} of #{@test_instruction[:cycles]}"
       end
     end
   end
