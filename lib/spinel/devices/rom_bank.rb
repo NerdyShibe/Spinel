@@ -113,7 +113,7 @@ module Spinel
 
         # 0x014E and 0x014F addresses are excluded from the checksum
         bytes = data.reject.with_index do |_byte, address|
-          (0x014E..0x014F).include?(address)
+          (0x014E..0x014F).cover?(address)
         end
 
         bytes.each do |byte|

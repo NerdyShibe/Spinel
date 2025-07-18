@@ -1,4 +1,5 @@
-plugins: rubocop-rspec
+plugins:
+  - rubocop-rspec
 
 AllCops:
   NewCops: enable
@@ -8,4 +9,13 @@ Metrics/BlockLength:
     - 'spec/**/*_spec.rb'
 
 RSpec/MultipleExpectations:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/AbcSize:
   Enabled: false

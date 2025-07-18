@@ -28,7 +28,7 @@ module Spinel
     private
 
     def valid?(address)
-      (0xC000..0xDFFF).include?(address)
+      (0xC000..0xDFFF).cover?(address)
     end
   end
 end
