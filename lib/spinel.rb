@@ -5,8 +5,8 @@ require 'debug'
 require_relative 'spinel/emulator'
 
 require_relative 'spinel/util/constants'
-require_relative 'spinel/util/instruction_handler'
-require_relative 'spinel/util/instructions'
+require_relative 'spinel/util/instruction_set'
+require_relative 'spinel/util/opcodes'
 
 require_relative 'spinel/components/apu'
 require_relative 'spinel/components/bus'

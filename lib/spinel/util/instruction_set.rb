@@ -1,10 +1,13 @@
+# rubocop:disable Lint/DuplicateBranch
 # frozen_string_literal: true
 
 module Spinel
   #
   # Will hold the logic for all instructions
   #
-  module InstructionHandler # rubocop:disable Metrics/ModuleLength
+  module InstructionSet # rubocop:disable Metrics/ModuleLength
+    include Instructions::Increment
+
     def wait
       puts 'Waiting...'
     end
@@ -21,13 +24,21 @@ module Spinel
     # =============== Load instructions ===============
     #
 
-    def ld_r8_r8(target_reg, source_reg)
+    def load_r8_r8(target_reg, source_reg)
       source_reg_value = @registers.send(source_reg)
       @registers.send(target_reg, source_reg_value)
     end
 
-    def ld_r16_d16
-      abort('Instruction not yet implemented: ld_r16_d16')
+    def load_r16_imm16(reg16)
+      case @ticks
+      when 5 then request_read
+      when 8 then @lsb = receive_data
+      when 9 then request_read
+      when 12
+        @msb = receive_data
+        @registers.send(reg16, (@msb << 8) | @lsb)
+      else wait
+      end
     end
 
     #
@@ -42,12 +53,9 @@ module Spinel
     def jump_a16
       case @ticks
       when 5 then request_read
-      when 6..7 then wait
       when 8 then @lsb = @bus.return_data
-      when 9 then request_read
-      when 10..11 then wait
+      when 9 then request_read # rubocop:disable Lint/DuplicateBranch
       when 12 then @msb = @bus.return_data
-      when 13..15 then wait
       when 16
         @jump_address = (@msb << 8) | @lsb
         puts "Jumping to $#{format('%04X', @jump_address)} address"
@@ -184,17 +192,14 @@ module Spinel
     def add_sp_r8
       case @ticks
       when 5 then request_read
-      when 6..7 then wait
       when 8
         @unsigned_byte = receive_data
-      when 9..11 then wait
       when 12
         # Sign the 8-bit value
         # If Bit7 is 1, subtract 256 from the value to get the negative equivalent
         # If Bit7 is 0, just use the positive number
         #
         @signed_byte = @unsigned_byte >= 128 ? @unsigned_byte - 256 : @unsigned_byte
-      when 13..15 then wait
       when 16
         # Half Carry and Carry Flags are calculated before the operation
         # Isolating the lower byte/nibble from SP to compare
@@ -208,6 +213,8 @@ module Spinel
         n_flag = 0
 
         @registers.set_flags(z: z_flag, n: n_flag, h: h_flag, c: c_flag)
+      else
+        wait
       end
     end
 
@@ -357,7 +364,6 @@ module Spinel
     # @param value [Integer] => Value to subtract from A register
     #
     def sbc(value)
-      puts "Subtracting #{format('%02X', value)} from #{format('%02X', @registers.a)}"
       carry_in = @registers.c_flag
 
       # Calculate the Half Carry and Carry Flags before the operation
@@ -368,9 +374,8 @@ module Spinel
       @registers.a -= (value + carry_in)
 
       z_flag = @registers.a.zero? ? 1 : 0
-      n_flag = 1 # Subtraction flag is always set
 
-      @registers.set_flags(z: z_flag, n: n_flag, h: h_flag, c: c_flag)
+      @registers.set_flags(z: z_flag, n: 1, h: h_flag, c: c_flag)
     end
 
     # 4 t-cycles
@@ -410,6 +415,17 @@ module Spinel
         byte = receive_data
         sbc(byte)
       end
+    end
+
+    # ========================================================================================
+    # Increment (INC)
+    #
+    # Increments a given value from either a 8-bit register, 16-bit register or
+    # 8-bit value from a 16-bit address
+    #
+    def inc_r8(operand)
+      new_value = @registers.send(operand) + 1
+      @registers.send(operand, new_value)
     end
 
     # ========================================================================================
@@ -474,3 +490,5 @@ module Spinel
     end
   end
 end
+
+# rubocop:enable Lint/DuplicateBranch
