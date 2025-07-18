@@ -2,12 +2,10 @@
 
 module Spinel
   module Cpu
-    #
     # Will hold the state of the CPU registers
-    # A => The Accumulator register
-    # F => Flags register
+    #
     class Registers
-      attr_accessor :a, :f, :b, :c, :d, :e, :h, :l, :sp, :pc
+      attr_reader :a, :f, :b, :c, :d, :e, :h, :l, :sp, :pc
 
       def initialize
         @a = 0x00
@@ -23,6 +21,34 @@ module Spinel
         @pc = 0x0100
       end
 
+      def a=(value)
+        @a = value & 0xFF
+      end
+
+      def b=(value)
+        @b = value & 0xFF
+      end
+
+      def c=(value)
+        @c = value & 0xFF
+      end
+
+      def d=(value)
+        @d = value & 0xFF
+      end
+
+      def e=(value)
+        @e = value & 0xFF
+      end
+
+      def h=(value)
+        @h = value & 0xFF
+      end
+
+      def l=(value)
+        @l = value & 0xFF
+      end
+
       # CPU uses a combination of the 8-bit registers
       # to create 16-bit registers
       #
@@ -31,8 +57,9 @@ module Spinel
       end
 
       def af=(value)
+        value &= 0xFFFF
         @a = value >> 8
-        @f = (value & 0xFF) & 0xF0 # Lower 4 bits are always 0
+        @f = value & 0xF0 # Lower 4 bits are always 0
       end
 
       def bc
@@ -40,6 +67,7 @@ module Spinel
       end
 
       def bc=(value)
+        value &= 0xFFFF
         @b = value >> 8
         @c = value & 0xFF
       end
@@ -49,6 +77,7 @@ module Spinel
       end
 
       def de=(value)
+        value &= 0xFFFF
         @d = value >> 8
         @e = value & 0xFF
       end
@@ -58,14 +87,13 @@ module Spinel
       end
 
       def hl=(value)
+        value &= 0xFFFF
         @h = value >> 8
         @l = value & 0xFF
       end
 
-      # Zero Flag
-      # Bit7 of the Flags register (@f)
-      # Determines if the result of the last
-      # arithmetic operation was zero
+      # Zero Flag => Bit7 of the Flags register (@f)
+      # Needs to be set if the result of the last operation was zero
       #
       def z_flag
         (@f & 0b10000000) >> 7
@@ -79,10 +107,8 @@ module Spinel
         end
       end
 
-      # Subtraction Flag
-      # Bit6 of the Flags register (@f)
-      # Determines if the last operation
-      # was a subtraction
+      # Subtraction Flag => Bit6 of the Flags register (@f)
+      # Needs to be set if the last operation was a subtraction
       #
       def n_flag
         (@f & 0b01000000) >> 6
@@ -96,9 +122,8 @@ module Spinel
         end
       end
 
-      # Half Carry Flag
-      # Bit5 of the Flags register (@f)
-      # ??
+      # Half Carry Flag => Bit5 of the Flags register (@f)
+      # Needs to be set if the last operation resulted in a half carry
       #
       def h_flag
         (@f & 0b00100000) >> 5
@@ -112,8 +137,7 @@ module Spinel
         end
       end
 
-      # Carry Flag
-      # Bit4 of the Flags register (@f)
+      # Carry Flag => Bit4 of the Flags register (@f)
       #
       # Value is set to 1 on the following scenarios:
       # When the result of an 8-bit addition is higher than $FF.
