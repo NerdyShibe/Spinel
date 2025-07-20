@@ -8,10 +8,10 @@ module Spinel
     def initialize(rom_file, status = 'paused')
       @status = status
 
-      @rom = Devices::RomBank.new(rom_file)
-      @vram = Vram.new
+      @rom = Cartridge::Rom.new(rom_file)
+      @vram = Hardware::Vram.new
       @bus = Hardware::Bus.new(@rom, @vram)
-      @cpu = Hardware::Cpu.new(@bus)
+      @cpu = Hardware::SoC::Cpu.new(@bus)
 
       boot
     end

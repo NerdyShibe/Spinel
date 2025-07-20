@@ -1,19 +1,17 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Cpu
+  module Hardware
     #
-    # Describes the High RAM inside the Game Boy SoC chip
-    # Because it's in the same chip as the CPU has lower latency
-    # It is used for faster instructions like the LDH
-    #
+    # Describes the VRAM chip inside the Game Boy
     # Can be read or written to
-    # Has 127 bytes reserved to it between $FF80 and $FFFE
+    # Has a total of 8 KiB addressable values between
+    # $8000 - $9FFF
     #
-    class Hram
+    class Vram
       def initialize
-        @bytes = Array.new(127, 0x00)
-        @start_offset = 0xFF80
+        @bytes = Array.new(8191, 0x00) # 8 KiB
+        @start_offset = 0x8000
       end
 
       def read_byte(address)
@@ -31,7 +29,7 @@ module Spinel
       private
 
       def valid?(address)
-        (0xFF80..0xFFFE).cover?(address)
+        (0x8000..0x9FFF).cover?(address)
       end
     end
   end

@@ -4,23 +4,28 @@ require 'debug'
 
 require_relative 'spinel/emulator'
 
+require_relative 'spinel/hardware/bus'
+require_relative 'spinel/hardware/soc/apu'
+require_relative 'spinel/hardware/soc/cpu'
+require_relative 'spinel/hardware/soc/hram'
+require_relative 'spinel/hardware/soc/registers'
+require_relative 'spinel/hardware/soc/ppu'
+require_relative 'spinel/hardware/timer'
+require_relative 'spinel/hardware/vram'
+require_relative 'spinel/hardware/wram'
+
+require_relative 'spinel/cartridge/base'
+require_relative 'spinel/cartridge/mbc'
+require_relative 'spinel/cartridge/ram'
+require_relative 'spinel/cartridge/rom'
+
+require_relative 'spinel/util/cpu/instruction_set'
+require_relative 'spinel/util/cpu/instructions/inc_reg8'
+require_relative 'spinel/util/cpu/instructions/inc_reg16'
+require_relative 'spinel/util/cpu/instructions/nop'
+require_relative 'spinel/util/cpu/instructions/not_implemented'
+require_relative 'spinel/util/cpu/opcodes'
 require_relative 'spinel/util/constants'
-require_relative 'spinel/util/instruction_set'
-require_relative 'spinel/util/opcodes'
-
-require_relative 'spinel/components/apu'
-require_relative 'spinel/components/bus'
-require_relative 'spinel/components/cpu'
-require_relative 'spinel/components/cpu/registers'
-require_relative 'spinel/components/cpu/hram'
-require_relative 'spinel/components/ppu'
-require_relative 'spinel/components/timer'
-require_relative 'spinel/components/vram'
-require_relative 'spinel/components/wram'
-
-require_relative 'spinel/devices/cartridge'
-require_relative 'spinel/devices/rom_bank'
-require_relative 'spinel/devices/ram_bank'
 
 #
 # TODO: Write detailed comment about the Spinel module
