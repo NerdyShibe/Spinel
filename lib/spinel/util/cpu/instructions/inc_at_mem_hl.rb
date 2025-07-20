@@ -7,8 +7,6 @@ module Spinel
         # Defines all possible Increment (INC) instructions
         #
         class IncAtMemHl < Base
-          attr_reader :mnemonic, :cycles
-
           def initialize
             super(
               mnemonic: 'INC [HL]',

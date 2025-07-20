@@ -7,8 +7,6 @@ module Spinel
         # Defines all possible Increment (INC) instructions
         #
         class IncReg8 < Base
-          attr_reader :mnemonic, :cycles
-
           def initialize(reg8)
             super(
               mnemonic: "INC #{reg8.to_s.upcase}",
