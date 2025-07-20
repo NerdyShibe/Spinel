@@ -26,7 +26,7 @@ module Spinel
           @opcode = nil
           @instruction = nil
 
-          @instructions = GameBoy::InstructionSet.build_unprefixed
+          @instructions = Util::Cpu::InstructionSet.build_unprefixed
           # @prefix_instructions = InstructionSet.build_cb_prefixed
         end
 
@@ -44,7 +44,7 @@ module Spinel
           else execute
           end
 
-          if @instruction && @ticks == @instruction[:cycles]
+          if @instruction && @ticks == @instruction.cycles
             reset_states
           else
             @ticks += 1
@@ -74,13 +74,6 @@ module Spinel
 
         def execute
           @instructions[@opcode].execute(self)
-          # @instructions[@opcode].execute(self)
-
-          # if @instruction[:operands].any?
-          #   send(@instruction[:method], *@instruction[:operands])
-          # else
-          #   send(@instruction[:method])
-          # end
         end
 
         def reset_states

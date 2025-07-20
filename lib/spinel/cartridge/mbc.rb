@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Spinel
-  module GamePak
+  module Cartridge
     class Mbc
       # TODO
     end

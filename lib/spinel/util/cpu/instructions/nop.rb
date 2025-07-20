@@ -1,12 +1,20 @@
 # frozen_string_literal: true
 
 module Spinel
-  module CpuInstructions
-    # Defines all possible Increment (INC) instructions
-    #
-    class Nop
-      def execute(_ticks)
-        puts 'Doing nothing...'
+  module Util
+    module Cpu
+      module Instructions
+        # Nop instruction
+        #
+        class Nop < Base
+          def initialize
+            super(mnemonic: 'NOP', length: 1, cycles: 4)
+          end
+
+          def execute(_cpu)
+            puts 'Doing nothing...'
+          end
+        end
       end
     end
   end

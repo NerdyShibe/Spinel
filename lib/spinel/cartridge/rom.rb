@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Spinel
-  module GamePak
+  module Cartridge
     #
     # When the game is loaded
     # this class needs to map all possible
