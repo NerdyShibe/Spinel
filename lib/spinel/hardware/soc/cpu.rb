@@ -51,12 +51,6 @@ module Spinel
           end
         end
 
-        private
-
-        def wait
-          puts 'Waiting...'
-        end
-
         def request_read(address = @registers.pc)
           puts 'Requesting read from the bus...'
           @bus.request_read(address)
@@ -64,12 +58,23 @@ module Spinel
         end
 
         def receive_data
-          @opcode = @bus.return_data
-          puts "Data received from the bus: 0x#{format('%02X', @opcode)}"
-          @bus.locked = false
-          # @instruction = Data::OPCODES[@opcode]
-          @instruction = @instructions[@opcode]
+          byte = @bus.return_data
           @registers.pc += 1
+          @bus.locked = false
+          puts "Data received from the bus: 0x#{format('%02X', byte)}"
+
+          return byte unless @opcode.nil?
+
+          @opcode = byte
+          @instruction = @instructions[@opcode]
+
+          @opcode
+        end
+
+        private
+
+        def wait
+          puts 'Waiting...'
         end
 
         def execute

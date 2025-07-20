@@ -9,88 +9,105 @@ module Spinel
         def self.build_unprefixed
           instructions = Array.new(256, Instructions::Unused.new)
 
-          instructions[Opcodes::NOP]   = Instructions::Nop.new
-          instructions[Opcodes::INC_B] = Instructions::IncReg8.new(:b)
-          instructions[Opcodes::INC_D] = Instructions::IncReg8.new(:d)
-          instructions[Opcodes::INC_H] = Instructions::IncReg8.new(:h)
+          # Opcodes: 0x00 - 0x0F
+          instructions[0x00] = Instructions::Nop.new
+          instructions[0x01] = Instructions::LdReg16Imm16.new(:bc)
+          instructions[0x02]
+          instructions[0x03]
+          instructions[0x04] = Instructions::IncReg8.new(:b)
+          instructions[0x05]
+          instructions[0x06] = Instructions::LdReg8Imm8.new(:b)
+          instructions[0x07]
+          instructions[0x08]
+          instructions[0x09]
+          instructions[0x0A]
+          instructions[0x0B]
+          instructions[0x0C] = Instructions::IncReg8.new(:c)
+          instructions[0x0D]
+          instructions[0x0E] = Instructions::LdReg8Imm8.new(:c)
+          instructions[0x0F]
 
-          instructions[Opcodes::INC_C] = Instructions::IncReg8.new(:c)
-          instructions[Opcodes::INC_E] = Instructions::IncReg8.new(:e)
-          instructions[Opcodes::INC_L] = Instructions::IncReg8.new(:l)
-          instructions[Opcodes::INC_A] = Instructions::IncReg8.new(:a)
+          # Opcodes: 0x10 - 0x1F
+          instructions[0x10]
+          instructions[0x11] = Instructions::LdReg16Imm16.new(:de)
+          instructions[0x12]
+          instructions[0x13]
+          instructions[0x14] = Instructions::IncReg8.new(:d)
+          instructions[0x15]
+          instructions[0x16] = Instructions::LdReg8Imm8.new(:d)
+          instructions[0x17]
+          instructions[0x18]
+          instructions[0x19]
+          instructions[0x1A]
+          instructions[0x1B]
+          instructions[0x1C] = Instructions::IncReg8.new(:e)
+          instructions[0x1D]
+          instructions[0x1E] = Instructions::LdReg8Imm8.new(:e)
+          instructions[0x1F]
+
+          # Opcodes: 0x20 - 0x2F
+          instructions[0x20]
+          instructions[0x21] = Instructions::LdReg16Imm16.new(:hl)
+          instructions[0x22]
+          instructions[0x23]
+          instructions[0x24] = Instructions::IncReg8.new(:h)
+          instructions[0x25]
+          instructions[0x26] = Instructions::LdReg8Imm8.new(:h)
+          instructions[0x27]
+          instructions[0x28]
+          instructions[0x29]
+          instructions[0x2A]
+          instructions[0x2B]
+          instructions[0x2C] = Instructions::IncReg8.new(:l)
+          instructions[0x2D]
+          instructions[0x2E] = Instructions::LdReg8Imm8.new(:l)
+          instructions[0x2F]
+
+          # Opcodes: 0x30 - 0x3F
+          instructions[0x30]
+          instructions[0x31] = Instructions::LdReg16Imm16.new(:sp)
+          instructions[0x32]
+          instructions[0x33]
+          instructions[0x34]
+          instructions[0x35]
+          instructions[0x36]
+          instructions[0x37]
+          instructions[0x38]
+          instructions[0x39]
+          instructions[0x3A]
+          instructions[0x3B]
+          instructions[0x3C] = Instructions::IncReg8.new(:a)
+          instructions[0x3D]
+          instructions[0x3E] = Instructions::LdReg8Imm8.new(:a)
+          instructions[0x3F]
+
+          # Opcodes: 0x40 - 0x4F
+          # Opcodes: 0x50 - 0x5F
+          # Opcodes: 0x60 - 0x6F
+          # Opcodes: 0x70 - 0x7F
+          # Opcodes: 0x80 - 0x8F
+          # Opcodes: 0x90 - 0x9F
+
+          # Opcodes: 0xA0 - 0xAF
+          instructions[0xA8] = Instructions::XorReg8.new(:b)
+          instructions[0xA9] = Instructions::XorReg8.new(:c)
+          instructions[0xAA] = Instructions::XorReg8.new(:d)
+          instructions[0xAB] = Instructions::XorReg8.new(:e)
+          instructions[0xAC] = Instructions::XorReg8.new(:h)
+          instructions[0xAD] = Instructions::XorReg8.new(:l)
+
+          instructions[0xAF] = Instructions::XorReg8.new(:a)
+
+          # Opcodes: 0xB0 - 0xBF
+
+          # Opcodes: 0xC0 - 0xCF
+          instructions[0xC3] = Instructions::JpImm16.new
+
+          # Opcodes: 0xD0 - 0xDF
+          # Opcodes: 0xE0 - 0xEF
+          # Opcodes: 0xF0 - 0xFF
 
           instructions
-        end
-
-        def wait
-          puts 'Waiting...'
-        end
-
-        # Does nothing for 4 t-cycles (ticks)
-        def nop
-          wait
-        end
-
-        #
-        # =============== Load instructions ===============
-        #
-
-        def load_r8_r8(target_reg, source_reg)
-          source_reg_value = @registers.send(source_reg)
-          @registers.send(target_reg, source_reg_value)
-        end
-
-        def load_r16_imm16(reg16)
-          case @ticks
-          when 5 then request_read
-          when 8 then @lsb = receive_data
-          when 9 then request_read
-          when 12
-            @msb = receive_data
-            @registers.send(reg16, (@msb << 8) | @lsb)
-          else wait
-          end
-        end
-
-        #
-        # =============== Jump instructions ===============
-        #
-
-        # M-Cycle 1 (Ticks 1-4): Fetches opcode and wait
-        # M-Cycle 2 (Ticks 5-8): Fetches the LSB of the jump address and waits
-        # M-Cycle 3 (Ticks 9-12): Fetches the MSB of the jump address and waits
-        # M-Cycle 4 (Ticks 13-16): Constitutes the jump address from MSB and LSB and jumps to address
-        #
-        def jump_a16
-          case @ticks
-          when 5 then request_read
-          when 8 then @lsb = @bus.return_data
-          when 9 then request_read # rubocop:disable Lint/DuplicateBranch
-          when 12 then @msb = @bus.return_data
-          when 16
-            @jump_address = (@msb << 8) | @lsb
-            puts "Jumping to $#{format('%04X', @jump_address)} address"
-            @registers.pc = @jump_address
-          else
-            wait
-          end
-        end
-
-        #
-        # =============== Arithmetic instructions ===============
-        #
-
-        # XOR operation with a given operand and the A register
-        def xor_r(operand)
-          case @ticks
-          when 4
-            puts "Operand: #{operand}, Register: #{@registers.send(operand)}"
-            result = @registers.a ^ @registers.send(operand)
-            @registers.a = result
-            @registers.f_z = result.zero? ? 1 : 0
-          else
-            wait
-          end
         end
 
         # Addition
@@ -426,17 +443,6 @@ module Spinel
             byte = receive_data
             sbc(byte)
           end
-        end
-
-        # ========================================================================================
-        # Increment (INC)
-        #
-        # Increments a given value from either a 8-bit register, 16-bit register or
-        # 8-bit value from a 16-bit address
-        #
-        def inc_r8(operand)
-          new_value = @registers.send(operand) + 1
-          @registers.send(operand, new_value)
         end
 
         # ========================================================================================
