@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Devices
-    class RamBank
+  module GamePak
+    class Ram
       def initialize
         # based on the cartridge type
         # map all possible external RAM banks

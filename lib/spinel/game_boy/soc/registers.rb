@@ -99,8 +99,8 @@ module Spinel
         (@f & 0b10000000) >> 7
       end
 
-      def z_flag=(bit_value)
-        if (bit_value & 1) == 1
+      def z_flag=(set)
+        if set
           @f |= 0b10000000
         else
           @f &= 0b01111111
@@ -114,8 +114,8 @@ module Spinel
         (@f & 0b01000000) >> 6
       end
 
-      def n_flag=(bit_value)
-        if (bit_value & 1) == 1
+      def n_flag=(set)
+        if set
           @f |= 0b01000000
         else
           @f &= 0b10111111
@@ -129,8 +129,8 @@ module Spinel
         (@f & 0b00100000) >> 5
       end
 
-      def h_flag=(bit_value)
-        if (bit_value & 1) == 1
+      def h_flag=(set)
+        if set
           @f |= 0b00100000
         else
           @f &= 0b11011111
@@ -149,19 +149,12 @@ module Spinel
         (@f & 0b00010000) >> 4
       end
 
-      def c_flag=(bit_value)
-        if (bit_value & 1) == 1
+      def c_flag=(set)
+        if set
           @f |= 0b00010000
         else
           @f &= 0b11101111
         end
-      end
-
-      def set_flags(z:, n:, h:, c:) # rubocop:disable Naming/MethodParameterName
-        self.z_flag = z
-        self.n_flag = n
-        self.h_flag = h
-        self.c_flag = c
       end
     end
   end

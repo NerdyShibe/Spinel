@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Devices
+  module GamePak
     #
     # When the game is loaded
     # this class needs to map all possible
     # ROM banks (each one should be 16 KiB)
     #
-    class RomBank
+    class Rom
       attr_reader :data
 
       #
