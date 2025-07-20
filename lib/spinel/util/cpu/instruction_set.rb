@@ -7,7 +7,7 @@ module Spinel
       # Build the instructions
       module InstructionSet
         def self.build_unprefixed
-          instructions = Array.new(256, Instructions::NotImplemented.new)
+          instructions = Array.new(256, Instructions::Unused.new)
 
           instructions[Opcodes::NOP]   = Instructions::Nop.new
           instructions[Opcodes::INC_B] = Instructions::IncReg8.new(:b)

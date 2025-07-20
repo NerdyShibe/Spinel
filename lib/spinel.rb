@@ -20,10 +20,12 @@ require_relative 'spinel/cartridge/ram'
 require_relative 'spinel/cartridge/rom'
 
 require_relative 'spinel/util/cpu/instruction_set'
+require_relative 'spinel/util/cpu/instructions/base'
+require_relative 'spinel/util/cpu/instructions/inc_at_mem_hl'
 require_relative 'spinel/util/cpu/instructions/inc_reg8'
 require_relative 'spinel/util/cpu/instructions/inc_reg16'
 require_relative 'spinel/util/cpu/instructions/nop'
-require_relative 'spinel/util/cpu/instructions/not_implemented'
+require_relative 'spinel/util/cpu/instructions/unused'
 require_relative 'spinel/util/cpu/opcodes'
 require_relative 'spinel/util/constants'
 
