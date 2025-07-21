@@ -10,7 +10,8 @@ module Spinel
 
       @rom = Cartridge::Rom.new(rom_file)
       @vram = Hardware::Vram.new
-      @bus = Hardware::Bus.new(@rom, @vram)
+      @wram = Hardware::Wram.new
+      @bus = Hardware::Bus.new(@rom, @vram, @wram)
       @cpu = Hardware::SoC::Cpu.new(@bus)
 
       boot
