@@ -26,9 +26,10 @@ module Spinel
     class Bus
       attr_accessor :locked
 
-      def initialize(cartridge, vram)
+      def initialize(cartridge, vram, wram)
         @cartridge = cartridge
         @vram = vram
+        @wram = wram
 
         @locked = false
         @latch = 0
@@ -54,6 +55,8 @@ module Spinel
           @cartridge.read_byte(address)
         when 0x8000..0x9FFF
           @vram.read_byte(address)
+        when 0xC000..0xDFFF
+          @wram.read_byte(address)
         else
           raise('This part of memory was not mapped yet')
         end
@@ -71,6 +74,8 @@ module Spinel
           @cartridge.write_byte(address, byte)
         when 0x8000..0x9FFF
           @vram.write_byte(address, byte)
+        when 0xC000..0xDFFF
+          @wram.write_byte(address, byte)
         else
           raise('This part of memory was not mapped yet')
         end
