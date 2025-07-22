@@ -7,8 +7,8 @@ module Spinel
       # Will hold the state of the CPU registers
       #
       class Registers
-        attr_accessor :sp, :pc
-        attr_reader :a, :f, :b, :c, :d, :e, :h, :l
+        attr_accessor :pc
+        attr_reader :a, :f, :b, :c, :d, :e, :h, :l, :sp
 
         def initialize
           @a = 0x00
@@ -93,6 +93,10 @@ module Spinel
           value &= 0xFFFF
           @h = value >> 8
           @l = value & 0xFF
+        end
+
+        def sp=(value)
+          @sp = value & 0xFFFF
         end
 
         # Zero Flag => Bit7 of the Flags register (@f)

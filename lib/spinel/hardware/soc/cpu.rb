@@ -27,7 +27,7 @@ module Spinel
           @instruction = nil
 
           @instructions = Util::Cpu::InstructionSet.build_unprefixed
-          # @prefix_instructions = InstructionSet.build_cb_prefixed
+          # @prefix_instructions = Util::Cpu::InstructionSet.build_cb_prefixed
         end
 
         # Each tick should be equivalent to 1 t-cycle
@@ -37,6 +37,7 @@ module Spinel
           return false if @halted
 
           # First machine cycle (t-cycles 1-4)
+          puts "Ticks: #{@ticks}"
           case @ticks
           when 1 then request_read
           when 2..3 then wait
@@ -69,6 +70,11 @@ module Spinel
           @instruction = @instructions[@opcode]
 
           @opcode
+        end
+
+        def request_write(address, value)
+          puts "Writing 0x#{format('%02X', value)} into Address: 0x#{format('%04X', address)}"
+          @bus.write_byte(address, value)
         end
 
         private
