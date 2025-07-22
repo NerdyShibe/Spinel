@@ -8,7 +8,7 @@ module Spinel
         # Unused opcodes
         class Unused < Base
           def initialize
-            super(mnemonic: 'UNUSED', length: 1, cycles: 4)
+            super(mnemonic: 'UNUSED', bytes: 1, cycles: 4)
           end
 
           def execute(cpu)

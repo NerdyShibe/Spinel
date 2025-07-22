@@ -6,9 +6,9 @@ module Spinel
       module Instructions
         # Jump Immediate 16-bit
         #
-        class JpImm16 < Base
+        class JmpImm16 < Base
           def initialize
-            super(mnemonic: 'JP Imm16', length: 3, cycles: 16)
+            super(mnemonic: 'JP Imm16', bytes: 3, cycles: 16)
           end
 
           def execute(cpu)

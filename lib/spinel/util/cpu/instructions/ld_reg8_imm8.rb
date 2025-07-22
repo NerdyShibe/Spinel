@@ -10,7 +10,7 @@ module Spinel
           def initialize(reg8)
             super(
               mnemonic: "LD #{reg8.to_s.upcase}, Imm8",
-              length: 2,
+              bytes: 2,
               cycles: 8
             )
 

@@ -8,7 +8,7 @@ module Spinel
         #
         class Nop < Base
           def initialize
-            super(mnemonic: 'NOP', length: 1, cycles: 4)
+            super(mnemonic: 'NOP', bytes: 1, cycles: 4)
           end
 
           def execute(_cpu)

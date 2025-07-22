@@ -4,12 +4,12 @@ module Spinel
   module Util
     module Cpu
       module Instructions
-        # Defines all possible Increment (INC) instructions
+        # Decrements the value of a given 8-bit register
         #
-        class IncReg8 < Base
+        class DecReg8 < Base
           def initialize(reg8)
             super(
-              mnemonic: "INC #{reg8.to_s.upcase}",
+              mnemonic: "DEC #{reg8.to_s.upcase}",
               bytes: 1,
               cycles: 4
             )
@@ -19,12 +19,12 @@ module Spinel
 
           def execute(cpu)
             value = cpu.registers.send(@reg8)
-            puts "Adding 1 to #{@reg8.to_s.upcase}: 0x#{format('%02X', value)}"
-            result = (value + 1) & 0xFF
+            puts "Subtracting 1 from #{@reg8.to_s.upcase}: 0x#{format('%02X', value)}"
+            result = (value - 1) & 0xFF
 
             cpu.registers.z_flag = result.zero?
-            cpu.registers.n_flag = false
-            cpu.registers.h_flag = ((value & 0x0F) + 1) > 0x0F
+            cpu.registers.n_flag = true
+            cpu.registers.h_flag = value.nobits?(0x0F) # requires a borrow
 
             cpu.registers.set_value(@reg8, result)
           end

@@ -6,11 +6,12 @@ module Spinel
       module Instructions
         # Base Instruction
         class Base
-          attr_reader :mnemonic, :length, :cycles
+          attr_accessor :cycles
+          attr_reader :mnemonic, :bytes
 
-          def initialize(mnemonic:, length:, cycles:)
+          def initialize(mnemonic:, bytes:, cycles:)
             @mnemonic = mnemonic
-            @length = length
+            @bytes = bytes
             @cycles = cycles
           end
 

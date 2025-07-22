@@ -10,7 +10,7 @@ module Spinel
           def initialize(reg8)
             super(
               mnemonic: "XOR A, #{reg8.to_s.upcase}",
-              length: 1,
+              bytes: 1,
               cycles: 4
             )
 

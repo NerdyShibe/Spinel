@@ -10,7 +10,7 @@ module Spinel
           def initialize(reg16)
             super(
               mnemonic: "LD #{reg16.to_s.upcase}, Imm16",
-              length: 3,
+              bytes: 3,
               cycles: 12
             )
 

@@ -10,7 +10,7 @@ module Spinel
           def initialize
             super(
               mnemonic: 'INC [HL]',
-              length: 1,
+              bytes: 1,
               cycles: 12
             )
           end
@@ -22,7 +22,7 @@ module Spinel
               cpu.request_read(@address)
             when 8 then @value = cpu.receive_data
             when 9 then @value += 1
-            when 12 then cpu.bus.write_byte(@address, @value)
+            when 12 then cpu.request_write(@address, @value)
             else wait
             end
           end
