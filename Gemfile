@@ -6,6 +6,7 @@ ruby '3.4.4'
 
 group :development do
   gem 'debug'
+  gem 'stackprof'
 end
 
 group :test do

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'debug'
+require 'benchmark'
+require 'stackprof'
 
 require_relative 'spinel/emulator'
 
@@ -58,7 +60,9 @@ module Spinel
     begin
       # Creates the initial instance of the Emulator
       # to start the emulation process
-      Spinel::Emulator.new(file_path)
+      StackProf.run(mode: :cpu, out: 'tmp/stackprof-cpu-spinel.dump') do
+        Spinel::Emulator.new(file_path)
+      end
     rescue Errno::ENOENT, file_path
       puts "Error: The file at #{file_path} does not exist"
 

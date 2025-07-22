@@ -1,6 +1,8 @@
 .idea
-.vscode
-.ruby-lsp
+.vscode/
+.ruby-lsp/
+coverage/
+roms/
+tmp/
+
 .tool-versions
-coverage
-roms

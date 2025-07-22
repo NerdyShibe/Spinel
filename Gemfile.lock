@@ -43,6 +43,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.1)
     simplecov_json_formatter (0.1.4)
+    stackprof (0.2.27)
     stringio (3.1.7)
 
 PLATFORMS
@@ -53,6 +54,7 @@ DEPENDENCIES
   debug
   rspec
   simplecov
+  stackprof
 
 RUBY VERSION
    ruby 3.4.4p34
