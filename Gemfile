@@ -6,6 +6,8 @@ ruby '3.4.4'
 
 group :development do
   gem 'debug'
+  gem 'rubocop'
+  gem 'rubocop-rspec'
   gem 'stackprof'
 end
 
