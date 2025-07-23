@@ -32,15 +32,24 @@ module Spinel
         @wram = wram
 
         @locked = false
-        @latch = 0
+        @data_latch = 0x00
+        @address_latch = 0x0000
       end
 
       def request_read(address)
-        @latch = read_byte(address)
+        @address_latch = address
       end
 
       def return_data
-        @latch
+        read_byte(@address_latch)
+      end
+
+      def request_write(address)
+        @address_latch = address
+      end
+
+      def confirm_write(value)
+        write_byte(@address_latch, value)
       end
 
       # Delegates which component should be involved
@@ -58,7 +67,7 @@ module Spinel
         when 0xC000..0xDFFF
           @wram.read_byte(address)
         else
-          raise('This part of memory was not mapped yet')
+          raise("This part of memory was not mapped yet: $#{format('%04X', address)}")
         end
       end
 
@@ -77,7 +86,7 @@ module Spinel
         when 0xC000..0xDFFF
           @wram.write_byte(address, byte)
         else
-          raise('This part of memory was not mapped yet')
+          raise("This part of memory was not mapped yet: $#{format('%04X', address)}")
         end
       end
     end
