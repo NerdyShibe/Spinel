@@ -16,13 +16,13 @@ module Spinel
           ].freeze
 
           # @param operation [Symbol] Which type of Addition
-          # @param operand [Symbol]
+          # @param register [Symbol]
           #
-          def initialize(operation, operand = nil)
+          def initialize(operation, register = nil)
             validate(operation)
 
             @operation = operation
-            @operand = operand
+            @register = register
 
             super(
               mnemonic: metadata[:mnemonic],
@@ -43,7 +43,7 @@ module Spinel
 
           private
 
-          # TODO: Validate operand also? Use respond_to? maybe
+          # TODO: Validate register also? Use respond_to? maybe
           def validate(operation)
             return if VALID_OPERATIONS.include?(operation)
 
@@ -54,13 +54,13 @@ module Spinel
           def metadata
             case @operation
             when :add_a_reg8
-              { mnemonic: "ADD A, #{@operand.to_s.upcase}", bytes: 1, cycles: 4 }
+              { mnemonic: "ADD A, #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
             when :add_a_mem_hl
               { mnemonic: 'ADD A, [HL]', bytes: 1, cycles: 8 }
             when :add_a_imm8
               { mnemonic: 'ADD A, imm8', bytes: 2, cycles: 8 }
             when :add_hl_reg16
-              { mnemonic: "ADD HL, #{@operand.to_s.upcase}", bytes: 1, cycles: 8 }
+              { mnemonic: "ADD HL, #{@register.to_s.upcase}", bytes: 1, cycles: 8 }
             when :add_sp_sig8
               { mnemonic: 'ADD SP, sig8', bytes: 2, cycles: 16 }
             end
@@ -82,7 +82,7 @@ module Spinel
           def add_a_reg8(cpu)
             case cpu.ticks
             when 4
-              reg8_value = cpu.registers.send(@operand)
+              reg8_value = cpu.registers.send(@register)
               add_a(cpu, reg8_value)
             else wait
             end
@@ -113,7 +113,7 @@ module Spinel
           def add_hl_reg16(cpu)
             case cpu.ticks
             when 8
-              value = cpu.registers.send(@operand)
+              value = cpu.registers.send(@register)
               hl_reg = cpu.registers.hl
               puts "Adding #{format('%04X', value)} to HL: #{format('%04X', hl_reg)}"
               result = (hl_reg + value) & 0xFFFF

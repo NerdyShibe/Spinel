@@ -14,13 +14,13 @@ module Spinel
           ].freeze
 
           # @param operation [Symbol] Which type of Subtraction
-          # @param operand [Symbol]
+          # @param register [Symbol]
           #
-          def initialize(operation, operand = nil)
+          def initialize(operation, register = nil)
             validate(operation)
 
             @operation = operation
-            @operand = operand
+            @register = register
 
             super(
               mnemonic: metadata[:mnemonic],
@@ -39,7 +39,7 @@ module Spinel
 
           private
 
-          # TODO: Validate operand also? Use respond_to? maybe
+          # TODO: Validate register also? Use respond_to? maybe
           def validate(operation)
             return if VALID_OPERATIONS.include?(operation)
 
@@ -50,7 +50,7 @@ module Spinel
           def metadata
             case @operation
             when :sub_a_reg8
-              { mnemonic: "SUB A, #{@operand.to_s.upcase}", bytes: 1, cycles: 4 }
+              { mnemonic: "SUB A, #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
             when :sub_a_mem_hl
               { mnemonic: 'SUB A, [HL]', bytes: 1, cycles: 8 }
             when :sub_a_imm8
@@ -78,7 +78,7 @@ module Spinel
           def sub_a_reg8(cpu)
             case cpu.ticks
             when 4
-              reg8_value = cpu.registers.send(@operand)
+              reg8_value = cpu.registers.send(@register)
               sub_a(cpu, reg8_value)
             else wait
             end
