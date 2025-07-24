@@ -9,7 +9,7 @@ module Spinel
         class Inc < Base
           VALID_OPERATIONS = %i[
             inc_reg8
-            inc_at_mem_hl
+            inc_mem_hl
             inc_reg16
           ].freeze
 
@@ -33,9 +33,9 @@ module Spinel
           #
           def execute(cpu)
             case @operation
-            when :inc_reg8      then inc_reg8(cpu)
-            when :inc_at_mem_hl then inc_at_mem_hl(cpu)
-            when :inc_reg16     then inc_reg16(cpu)
+            when :inc_reg8   then inc_reg8(cpu)
+            when :inc_mem_hl then inc_mem_hl(cpu)
+            when :inc_reg16  then inc_reg16(cpu)
             end
           end
 
@@ -52,7 +52,7 @@ module Spinel
             case @operation
             when :inc_reg8
               { mnemonic: "INC #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
-            when :inc_at_mem_hl
+            when :inc_mem_hl
               { mnemonic: 'INC [HL]', bytes: 1, cycles: 12 }
             when :inc_reg16
               { mnemonic: "INC #{@register.to_s.upcase}", bytes: 1, cycles: 8 }
@@ -87,19 +87,18 @@ module Spinel
 
           # Increments the value that HL is pointing to in memory
           #
-          def inc_at_mem_hl(cpu)
+          def inc_mem_hl(cpu)
             case cpu.ticks
-            when 5
-              @address = cpu.registers.hl
-              cpu.request_read(@address)
+            when 5 then cpu.request_read(cpu.registers.hl)
             when 8 then @value_at_mem_hl = cpu.receive_data
+            when 9 then cpu.request_write(cpu.registers.hl)
             when 12
               puts "Adding 1 to the value at [HL]: #{format('%02X', @value_at_mem_hl)}"
               result = @value_at_mem_hl + 1
 
               update_flags(cpu, result, @value_at_mem_hl)
 
-              cpu.request_write(@address, result)
+              cpu.confirm_write(result)
             else wait
             end
           end
