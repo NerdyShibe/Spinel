@@ -7,84 +7,151 @@ module Spinel
       # Build the instructions
       module InstructionSet
         def self.build_unprefixed
-          instructions = Array.new(256, Instructions::Unused.new)
+          instructions = Array.new(256)
 
           # Opcodes: 0x00 - 0x0F
           instructions[0x00] = Instructions::Nop.new
-          instructions[0x01] = Instructions::LdReg16Imm16.new(:bc)
-          instructions[0x02]
+          instructions[0x01] = Instructions::Load.new(:ld_reg16_imm16, :bc)
+          instructions[0x02] = Instructions::Load.new(:ld_mem_reg16_a, :bc)
           instructions[0x03] = Instructions::Inc.new(:inc_reg16, :bc)
           instructions[0x04] = Instructions::Inc.new(:inc_reg8, :b)
-          instructions[0x05] = Instructions::DecReg8.new(:b)
-          instructions[0x06] = Instructions::LdReg8Imm8.new(:b)
-          instructions[0x07]
-          instructions[0x08]
+          instructions[0x05] = Instructions::Dec.new(:dec_reg8, :b)
+          instructions[0x06] = Instructions::Load.new(:ld_reg8_imm8, :b)
+          instructions[0x07] = Instructions::Rotate.new(:rlca)
+          instructions[0x08] = Instructions::Load.new(:ld_mem_imm16_sp)
           instructions[0x09] = Instructions::Add.new(:add_hl_reg16, :bc)
-          instructions[0x0A]
-          instructions[0x0B] = Instructions::DecReg16.new(:bc)
+          instructions[0x0A] = Instructions::Load.new(:ld_a_mem_reg16, :bc)
+          instructions[0x0B] = Instructions::Dec.new(:dec_reg16, :bc)
           instructions[0x0C] = Instructions::Inc.new(:inc_reg8, :c)
-          instructions[0x0D] = Instructions::DecReg8.new(:c)
-          instructions[0x0E] = Instructions::LdReg8Imm8.new(:c)
-          instructions[0x0F]
+          instructions[0x0D] = Instructions::Dec.new(:dec_reg8, :c)
+          instructions[0x0E] = Instructions::Load.new(:ld_reg8_imm8, :c)
+          instructions[0x0F] = Instructions::Rotate.new(:rrca)
 
           # Opcodes: 0x10 - 0x1F
-          instructions[0x10]
-          instructions[0x11] = Instructions::LdReg16Imm16.new(:de)
-          instructions[0x12]
+          instructions[0x10] = Instructions::Interrupt.new(:stop)
+          instructions[0x11] = Instructions::Load.new(:ld_reg16_imm16, :de)
+          instructions[0x12] = Instructions::Load.new(:ld_mem_reg16_a, :de)
           instructions[0x13] = Instructions::Inc.new(:inc_reg16, :de)
           instructions[0x14] = Instructions::Inc.new(:inc_reg8, :d)
-          instructions[0x15] = Instructions::DecReg8.new(:d)
-          instructions[0x16] = Instructions::LdReg8Imm8.new(:d)
-          instructions[0x17]
-          instructions[0x18]
+          instructions[0x15] = Instructions::Dec.new(:dec_reg8, :d)
+          instructions[0x16] = Instructions::Load.new(:ld_reg8_imm8, :d)
+          instructions[0x17] = Instructions::Rotate.new(:rla)
+          instructions[0x18] = Instructions::Jump.new(:jr_sig8)
           instructions[0x19] = Instructions::Add.new(:add_hl_reg16, :de)
-          instructions[0x1A]
-          instructions[0x1B] = Instructions::DecReg16.new(:de)
+          instructions[0x1A] = Instructions::Load.new(:ld_a_mem_reg16, :de)
+          instructions[0x1B] = Instructions::Dec.new(:dec_reg16, :de)
           instructions[0x1C] = Instructions::Inc.new(:inc_reg8, :e)
-          instructions[0x1D] = Instructions::DecReg8.new(:e)
-          instructions[0x1E] = Instructions::LdReg8Imm8.new(:e)
-          instructions[0x1F]
+          instructions[0x1D] = Instructions::Dec.new(:dec_reg8, :e)
+          instructions[0x1E] = Instructions::Load.new(:ld_reg8_imm8, :e)
+          instructions[0x1F] = Instructions::Rotate.new(:rra)
 
           # Opcodes: 0x20 - 0x2F
-          instructions[0x20] = Instructions::JmpRelSig8.new(:z_flag, 0)
-          instructions[0x21] = Instructions::LdReg16Imm16.new(:hl)
-          instructions[0x22]
+          instructions[0x20] = Instructions::Jump.new(:jr_sig8, :z_flag, 0)
+          instructions[0x21] = Instructions::Load.new(:ld_reg16_imm16, :hl)
+          instructions[0x22] = Instructions::Load.new(:ldi_mem_hl_a)
           instructions[0x23] = Instructions::Inc.new(:inc_reg16, :hl)
           instructions[0x24] = Instructions::Inc.new(:inc_reg8, :h)
-          instructions[0x25] = Instructions::DecReg8.new(:h)
-          instructions[0x26] = Instructions::LdReg8Imm8.new(:h)
-          instructions[0x27]
-          instructions[0x28] = Instructions::JmpRelSig8.new(:z_flag, 1)
+          instructions[0x25] = Instructions::Dec.new(:dec_reg8, :h)
+          instructions[0x26] = Instructions::Load.new(:ld_reg8_imm8, :h)
+          instructions[0x27] = Instructions::Daa.new
+          instructions[0x28] = Instructions::Jump.new(:jr_sig8, :z_flag, 1)
           instructions[0x29] = Instructions::Add.new(:add_hl_reg16, :hl)
-          instructions[0x2A]
-          instructions[0x2B] = Instructions::DecReg16.new(:hl)
+          instructions[0x2A] = Instructions::Load.new(:ldi_a_mem_hl)
+          instructions[0x2B] = Instructions::Dec.new(:dec_reg16, :hl)
           instructions[0x2C] = Instructions::Inc.new(:inc_reg8, :l)
-          instructions[0x2D] = Instructions::DecReg8.new(:l)
-          instructions[0x2E] = Instructions::LdReg8Imm8.new(:l)
-          instructions[0x2F]
+          instructions[0x2D] = Instructions::Dec.new(:dec_reg8, :l)
+          instructions[0x2E] = Instructions::Load.new(:ld_reg8_imm8, :l)
+          instructions[0x2F] = Instructions::Complement.new(:cpl)
 
           # Opcodes: 0x30 - 0x3F
-          instructions[0x30] = Instructions::JmpRelSig8.new(:c_flag, 0)
-          instructions[0x31] = Instructions::LdReg16Imm16.new(:sp)
-          instructions[0x32] = Instructions::LdAIntoMemHlDec.new
+          instructions[0x30] = Instructions::Jump.new(:jr_sig8, :c_flag, 0)
+          instructions[0x31] = Instructions::Load.new(:ld_reg16_imm16, :sp)
+          instructions[0x32] = Instructions::Load.new(:ldd_mem_hl_a)
           instructions[0x33] = Instructions::Inc.new(:inc_reg16, :sp)
-          instructions[0x34] = Instructions::Inc.new(:inc_at_mem_hl)
-          instructions[0x35]
-          instructions[0x36]
-          instructions[0x37]
-          instructions[0x38] = Instructions::JmpRelSig8.new(:c_flag, 1)
+          instructions[0x34] = Instructions::Inc.new(:inc_mem_hl)
+          instructions[0x35] = Instructions::Dec.new(:dec_mem_hl)
+          instructions[0x36] = Instructions::Load.new(:ld_mem_hl_imm8)
+          instructions[0x37] = Instructions::Complement.new(:scf)
+          instructions[0x38] = Instructions::Jump.new(:jr_sig8, :c_flag, 1)
           instructions[0x39] = Instructions::Add.new(:add_hl_reg16, :sp)
-          instructions[0x3A]
-          instructions[0x3B] = Instructions::DecReg16.new(:sp)
+          instructions[0x3A] = Instructions::Load.new(:ldd_a_mem_hl)
+          instructions[0x3B] = Instructions::Dec.new(:dec_reg16, :sp)
           instructions[0x3C] = Instructions::Inc.new(:inc_reg8, :a)
-          instructions[0x3D] = Instructions::DecReg8.new(:a)
-          instructions[0x3E] = Instructions::LdReg8Imm8.new(:a)
-          instructions[0x3F]
+          instructions[0x3D] = Instructions::Dec.new(:dec_reg8, :a)
+          instructions[0x3E] = Instructions::Load.new(:ld_reg8_imm8, :a)
+          instructions[0x3F] = Instructions::Complement.new(:ccf)
 
           # Opcodes: 0x40 - 0x4F
+          instructions[0x40] = Instructions::Load.new(:ld_reg8_reg8, :b, :b)
+          instructions[0x41] = Instructions::Load.new(:ld_reg8_reg8, :b, :c)
+          instructions[0x42] = Instructions::Load.new(:ld_reg8_reg8, :b, :d)
+          instructions[0x43] = Instructions::Load.new(:ld_reg8_reg8, :b, :e)
+          instructions[0x44] = Instructions::Load.new(:ld_reg8_reg8, :b, :h)
+          instructions[0x45] = Instructions::Load.new(:ld_reg8_reg8, :b, :l)
+          instructions[0x46] = Instructions::Load.new(:ld_reg8_mem_hl, :b)
+          instructions[0x47] = Instructions::Load.new(:ld_reg8_reg8, :b, :a)
+          instructions[0x48] = Instructions::Load.new(:ld_reg8_reg8, :c, :b)
+          instructions[0x49] = Instructions::Load.new(:ld_reg8_reg8, :c, :c)
+          instructions[0x4A] = Instructions::Load.new(:ld_reg8_reg8, :c, :d)
+          instructions[0x4B] = Instructions::Load.new(:ld_reg8_reg8, :c, :e)
+          instructions[0x4C] = Instructions::Load.new(:ld_reg8_reg8, :c, :h)
+          instructions[0x4D] = Instructions::Load.new(:ld_reg8_reg8, :c, :l)
+          instructions[0x4E] = Instructions::Load.new(:ld_reg8_mem_hl, :c)
+          instructions[0x4F] = Instructions::Load.new(:ld_reg8_reg8, :c, :a)
+
           # Opcodes: 0x50 - 0x5F
+          instructions[0x50] = Instructions::Load.new(:ld_reg8_reg8, :d, :b)
+          instructions[0x51] = Instructions::Load.new(:ld_reg8_reg8, :d, :c)
+          instructions[0x52] = Instructions::Load.new(:ld_reg8_reg8, :d, :d)
+          instructions[0x53] = Instructions::Load.new(:ld_reg8_reg8, :d, :e)
+          instructions[0x54] = Instructions::Load.new(:ld_reg8_reg8, :d, :h)
+          instructions[0x55] = Instructions::Load.new(:ld_reg8_reg8, :d, :l)
+          instructions[0x56] = Instructions::Load.new(:ld_reg8_mem_hl, :d)
+          instructions[0x57] = Instructions::Load.new(:ld_reg8_reg8, :d, :a)
+          instructions[0x58] = Instructions::Load.new(:ld_reg8_reg8, :e, :b)
+          instructions[0x59] = Instructions::Load.new(:ld_reg8_reg8, :e, :c)
+          instructions[0x5A] = Instructions::Load.new(:ld_reg8_reg8, :e, :d)
+          instructions[0x5B] = Instructions::Load.new(:ld_reg8_reg8, :e, :e)
+          instructions[0x5C] = Instructions::Load.new(:ld_reg8_reg8, :e, :h)
+          instructions[0x5D] = Instructions::Load.new(:ld_reg8_reg8, :e, :l)
+          instructions[0x5E] = Instructions::Load.new(:ld_reg8_mem_hl, :e)
+          instructions[0x5F] = Instructions::Load.new(:ld_reg8_reg8, :e, :a)
+
           # Opcodes: 0x60 - 0x6F
+          instructions[0x60] = Instructions::Load.new(:ld_reg8_reg8, :h, :b)
+          instructions[0x61] = Instructions::Load.new(:ld_reg8_reg8, :h, :c)
+          instructions[0x62] = Instructions::Load.new(:ld_reg8_reg8, :h, :d)
+          instructions[0x63] = Instructions::Load.new(:ld_reg8_reg8, :h, :e)
+          instructions[0x64] = Instructions::Load.new(:ld_reg8_reg8, :h, :h)
+          instructions[0x65] = Instructions::Load.new(:ld_reg8_reg8, :h, :l)
+          instructions[0x66] = Instructions::Load.new(:ld_reg8_mem_hl, :h)
+          instructions[0x67] = Instructions::Load.new(:ld_reg8_reg8, :h, :a)
+          instructions[0x68] = Instructions::Load.new(:ld_reg8_reg8, :l, :b)
+          instructions[0x69] = Instructions::Load.new(:ld_reg8_reg8, :l, :c)
+          instructions[0x6A] = Instructions::Load.new(:ld_reg8_reg8, :l, :d)
+          instructions[0x6B] = Instructions::Load.new(:ld_reg8_reg8, :l, :e)
+          instructions[0x6C] = Instructions::Load.new(:ld_reg8_reg8, :l, :h)
+          instructions[0x6D] = Instructions::Load.new(:ld_reg8_reg8, :l, :l)
+          instructions[0x6E] = Instructions::Load.new(:ld_reg8_mem_hl, :l)
+          instructions[0x6F] = Instructions::Load.new(:ld_reg8_reg8, :l, :a)
+
           # Opcodes: 0x70 - 0x7F
+          instructions[0x70] = Instructions::Load.new(:ld_mem_hl_reg8, :b)
+          instructions[0x71] = Instructions::Load.new(:ld_mem_hl_reg8, :c)
+          instructions[0x72] = Instructions::Load.new(:ld_mem_hl_reg8, :d)
+          instructions[0x73] = Instructions::Load.new(:ld_mem_hl_reg8, :e)
+          instructions[0x74] = Instructions::Load.new(:ld_mem_hl_reg8, :h)
+          instructions[0x75] = Instructions::Load.new(:ld_mem_hl_reg8, :l)
+          instructions[0x76] = Instructions::Interrupt.new(:halt)
+          instructions[0x77] = Instructions::Load.new(:ld_mem_hl_reg8, :a)
+          instructions[0x78] = Instructions::Load.new(:ld_reg8_reg8, :a, :b)
+          instructions[0x79] = Instructions::Load.new(:ld_reg8_reg8, :a, :c)
+          instructions[0x7A] = Instructions::Load.new(:ld_reg8_reg8, :a, :d)
+          instructions[0x7B] = Instructions::Load.new(:ld_reg8_reg8, :a, :e)
+          instructions[0x7C] = Instructions::Load.new(:ld_reg8_reg8, :a, :h)
+          instructions[0x7D] = Instructions::Load.new(:ld_reg8_reg8, :a, :l)
+          instructions[0x7E] = Instructions::Load.new(:ld_reg8_mem_hl, :a)
+          instructions[0x7F] = Instructions::Load.new(:ld_reg8_reg8, :a, :a)
 
           # Opcodes: 0x80 - 0x8F
           instructions[0x80] = Instructions::Add.new(:add_a_reg8, :b)
@@ -95,6 +162,14 @@ module Spinel
           instructions[0x85] = Instructions::Add.new(:add_a_reg8, :l)
           instructions[0x86] = Instructions::Add.new(:add_a_mem_hl)
           instructions[0x87] = Instructions::Add.new(:add_a_reg8, :a)
+          instructions[0x88] = Instructions::Adc.new(:adc_a_reg8, :b)
+          instructions[0x89] = Instructions::Adc.new(:adc_a_reg8, :c)
+          instructions[0x8A] = Instructions::Adc.new(:adc_a_reg8, :d)
+          instructions[0x8B] = Instructions::Adc.new(:adc_a_reg8, :e)
+          instructions[0x8C] = Instructions::Adc.new(:adc_a_reg8, :h)
+          instructions[0x8D] = Instructions::Adc.new(:adc_a_reg8, :l)
+          instructions[0x8E] = Instructions::Adc.new(:adc_a_mem_hl)
+          instructions[0x8F] = Instructions::Adc.new(:adc_a_reg8, :a)
 
           # Opcodes: 0x90 - 0x9F
           instructions[0x90] = Instructions::Sub.new(:sub_a_reg8, :b)
@@ -105,231 +180,418 @@ module Spinel
           instructions[0x95] = Instructions::Sub.new(:sub_a_reg8, :l)
           instructions[0x96] = Instructions::Sub.new(:sub_a_mem_hl)
           instructions[0x97] = Instructions::Sub.new(:sub_a_reg8, :a)
+          instructions[0x98] = Instructions::Sbc.new(:sbc_a_reg8, :b)
+          instructions[0x99] = Instructions::Sbc.new(:sbc_a_reg8, :c)
+          instructions[0x9A] = Instructions::Sbc.new(:sbc_a_reg8, :d)
+          instructions[0x9B] = Instructions::Sbc.new(:sbc_a_reg8, :e)
+          instructions[0x9C] = Instructions::Sbc.new(:sbc_a_reg8, :h)
+          instructions[0x9D] = Instructions::Sbc.new(:sbc_a_reg8, :l)
+          instructions[0x9E] = Instructions::Sbc.new(:sbc_a_mem_hl)
+          instructions[0x9F] = Instructions::Sbc.new(:sbc_a_reg8, :a)
 
           # Opcodes: 0xA0 - 0xAF
-          instructions[0xA8] = Instructions::XorReg8.new(:b)
-          instructions[0xA9] = Instructions::XorReg8.new(:c)
-          instructions[0xAA] = Instructions::XorReg8.new(:d)
-          instructions[0xAB] = Instructions::XorReg8.new(:e)
-          instructions[0xAC] = Instructions::XorReg8.new(:h)
-          instructions[0xAD] = Instructions::XorReg8.new(:l)
-
-          instructions[0xAF] = Instructions::XorReg8.new(:a)
+          instructions[0xA0] = Instructions::And.new(:and_a_reg8, :b)
+          instructions[0xA1] = Instructions::And.new(:and_a_reg8, :c)
+          instructions[0xA2] = Instructions::And.new(:and_a_reg8, :d)
+          instructions[0xA3] = Instructions::And.new(:and_a_reg8, :e)
+          instructions[0xA4] = Instructions::And.new(:and_a_reg8, :h)
+          instructions[0xA5] = Instructions::And.new(:and_a_reg8, :l)
+          instructions[0xA6] = Instructions::And.new(:and_a_mem_hl)
+          instructions[0xA7] = Instructions::And.new(:and_a_reg8, :a)
+          instructions[0xA8] = Instructions::Xor.new(:xor_a_reg8, :b)
+          instructions[0xA9] = Instructions::Xor.new(:xor_a_reg8, :c)
+          instructions[0xAA] = Instructions::Xor.new(:xor_a_reg8, :d)
+          instructions[0xAB] = Instructions::Xor.new(:xor_a_reg8, :e)
+          instructions[0xAC] = Instructions::Xor.new(:xor_a_reg8, :h)
+          instructions[0xAD] = Instructions::Xor.new(:xor_a_reg8, :l)
+          instructions[0xAE] = Instructions::Xor.new(:xor_a_mem_hl)
+          instructions[0xAF] = Instructions::Xor.new(:xor_a_reg8, :a)
 
           # Opcodes: 0xB0 - 0xBF
+          instructions[0xB0] = Instructions::Or.new(:or_a_reg8, :b)
+          instructions[0xB1] = Instructions::Or.new(:or_a_reg8, :c)
+          instructions[0xB2] = Instructions::Or.new(:or_a_reg8, :d)
+          instructions[0xB3] = Instructions::Or.new(:or_a_reg8, :e)
+          instructions[0xB4] = Instructions::Or.new(:or_a_reg8, :h)
+          instructions[0xB5] = Instructions::Or.new(:or_a_reg8, :l)
+          instructions[0xB6] = Instructions::Or.new(:or_a_mem_hl)
+          instructions[0xB7] = Instructions::Or.new(:or_a_reg8, :a)
+          instructions[0xB8] = Instructions::Compare.new(:cp_a_reg8, :b)
+          instructions[0xB9] = Instructions::Compare.new(:cp_a_reg8, :c)
+          instructions[0xBA] = Instructions::Compare.new(:cp_a_reg8, :d)
+          instructions[0xBB] = Instructions::Compare.new(:cp_a_reg8, :e)
+          instructions[0xBC] = Instructions::Compare.new(:cp_a_reg8, :h)
+          instructions[0xBD] = Instructions::Compare.new(:cp_a_reg8, :l)
+          instructions[0xBE] = Instructions::Compare.new(:cp_a_mem_hl)
+          instructions[0xBF] = Instructions::Compare.new(:cp_a_reg8, :a)
 
           # Opcodes: 0xC0 - 0xCF
-          instructions[0xC0]
-          instructions[0xC1]
-          instructions[0xC2]
-          instructions[0xC3] = Instructions::JmpImm16.new
-          instructions[0xC4]
-          instructions[0xC5]
+          instructions[0xC0] = Instructions::Subroutines.new(:ret_flag, :z_flag, 0)
+          instructions[0xC1] = Instructions::Stack.new(:pop_reg16, :bc)
+          instructions[0xC2] = Instructions::Jump.new(:jp_imm16, :z_flag, 0)
+          instructions[0xC3] = Instructions::Jump.new(:jp_imm16)
+          instructions[0xC4] = Instructions::Subroutines.new(:call_imm16, :z_flag, 0)
+          instructions[0xC5] = Instructions::Stack.new(:push_reg16, :bc)
           instructions[0xC6] = Instructions::Add.new(:add_a_imm8)
+          instructions[0xC7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0000)
+          instructions[0xC8] = Instructions::Subroutines.new(:ret_flag, :z_flag, 1)
+          instructions[0xC9] = Instructions::Subroutines.new(:ret)
+          instructions[0xCA] = Instructions::Jump.new(:jp_imm16, :z_flag, 1)
+          instructions[0xCB] = Instructions::Prefix.new
+          instructions[0xCC] = Instructions::Subroutines.new(:call_imm16, :z_flag, 1)
+          instructions[0xCD] = Instructions::Subroutines.new(:call_imm16)
+          instructions[0xCE] = Instructions::Adc.new(:adc_a_imm8)
+          instructions[0xCF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0008)
 
           # Opcodes: 0xD0 - 0xDF
+          instructions[0xD0] = Instructions::Subroutines.new(:ret_flag, :c_flag, 0)
+          instructions[0xD1] = Instructions::Stack.new(:pop_reg16, :de)
+          instructions[0xD2] = Instructions::Jump.new(:jp_imm16, :c_flag, 0)
+          instructions[0xD3] = Instructions::Unused.new
+          instructions[0xD4] = Instructions::Subroutines.new(:call_imm16, :c_flag, 0)
+          instructions[0xD5] = Instructions::Stack.new(:push_reg16, :de)
           instructions[0xD6] = Instructions::Sub.new(:sub_a_imm8)
+          instructions[0xD7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0010)
+          instructions[0xD8] = Instructions::Subroutines.new(:ret_flag, :c_flag, 1)
+          instructions[0xD9] = Instructions::Subroutines.new(:reti)
+          instructions[0xDA] = Instructions::Jump.new(:jp_imm16, :c_flag, 1)
+          instructions[0xDB] = Instructions::Unused.new
+          instructions[0xDC] = Instructions::Subroutines.new(:call_imm16, :c_flag, 1)
+          instructions[0xDD] = Instructions::Unused.new
+          instructions[0xDE] = Instructions::Sbc.new(:sbc_a_imm8)
+          instructions[0xDF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0018)
 
           # Opcodes: 0xE0 - 0xEF
+          instructions[0xE0] = Instructions::Load.new(:ldh_mem_imm8_a)
+          instructions[0xE1] = Instructions::Stack.new(:pop_reg16, :hl)
+          instructions[0xE2] = Instructions::Load.new(:ldh_mem_c_a)
+          instructions[0xE3] = Instructions::Unused.new
+          instructions[0xE4] = Instructions::Unused.new
+          instructions[0xE5] = Instructions::Stack.new(:push_reg16, :hl)
+          instructions[0xE6] = Instructions::And.new(:and_a_imm8)
+          instructions[0xE7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0020)
           instructions[0xE8] = Instructions::Add.new(:add_sp_sig8)
+          instructions[0xE9] = Instructions::Jump.new(:jp_hl)
+          instructions[0xEA] = Instructions::Load.new(:ld_mem_imm16_a)
+          instructions[0xEB] = Instructions::Unused.new
+          instructions[0xEC] = Instructions::Unused.new
+          instructions[0xED] = Instructions::Unused.new
+          instructions[0xEE] = Instructions::Xor.new(:xor_a_imm8)
+          instructions[0xEF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0028)
 
           # Opcodes: 0xF0 - 0xFF
+          instructions[0xF0] = Instructions::Load.new(:ldh_a_mem_imm8)
+          instructions[0xF1] = Instructions::Stack.new(:pop_reg16, :af)
+          instructions[0xF2] = Instructions::Load.new(:ldh_a_mem_c)
+          instructions[0xF3] = Instructions::Interrupt.new(:di)
+          instructions[0xF4] = Instructions::Unused.new
+          instructions[0xF5] = Instructions::Stack.new(:push_reg16, :af)
+          instructions[0xF6] = Instructions::Or.new(:or_a_imm8)
+          instructions[0xF7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0030)
+          instructions[0xF8] = Instructions::Load.new(:ld_hl_sp_plus_sig8)
+          instructions[0xF9] = Instructions::Load.new(:ld_sp_hl)
+          instructions[0xFA] = Instructions::Load.new(:ld_a_mem_imm16)
+          instructions[0xFB] = Instructions::Interrupt.new(:ei)
+          instructions[0xFC] = Instructions::Unused.new
+          instructions[0xFD] = Instructions::Unused.new
+          instructions[0xFE] = Instructions::Compare.new(:cp_a_imm8)
+          instructions[0xFF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0038)
 
           instructions
         end
 
-        # ========================================================================================
-        # Addition with Carry (ADC)
-        #
-        # Adds a given value and the Carry Flag to the A register
-        # and stores it back into the A register
-        # A = A + value + c_flag
-        #
-        # Subtraction Flag is always set to 0
-        # The other flags need to be calculated depending on the result
-        #
-        # @param value [Integer] => Value to be added
-        #
-        def adc_a(value)
-          carry_in = @registers.c_flag
+        def self.build_cb_prefixed
+          instructions = Array.new(256, Instructions::NotImplemented.new)
 
-          # Calculate the Half Carry and Carry Flags before the operation
-          #
-          h_flag = ((@registers.a & 0x0F) + (value & 0x0F)) > 0x0F
-          c_flag = (@registers.a + value) > 0xFF
+          # Opcodes: 0x00 - 0x0F
+          instructions[0x00] = Instructions::BitShifts.new(:rlc, :b)
+          instructions[0x01] = Instructions::BitShifts.new(:rlc, :c)
+          instructions[0x02] = Instructions::BitShifts.new(:rlc, :d)
+          instructions[0x03] = Instructions::BitShifts.new(:rlc, :e)
+          instructions[0x04] = Instructions::BitShifts.new(:rlc, :h)
+          instructions[0x05] = Instructions::BitShifts.new(:rlc, :l)
+          instructions[0x06] = Instructions::BitShifts.new(:rlc_mem_hl)
+          instructions[0x07] = Instructions::BitShifts.new(:rlc, :a)
+          instructions[0x08] = Instructions::BitShifts.new(:rrc, :b)
+          instructions[0x09] = Instructions::BitShifts.new(:rrc, :c)
+          instructions[0x0A] = Instructions::BitShifts.new(:rrc, :d)
+          instructions[0x0B] = Instructions::BitShifts.new(:rrc, :e)
+          instructions[0x0C] = Instructions::BitShifts.new(:rrc, :h)
+          instructions[0x0D] = Instructions::BitShifts.new(:rrc, :l)
+          instructions[0x0E] = Instructions::BitShifts.new(:rrc_mem_hl)
+          instructions[0x0F] = Instructions::BitShifts.new(:rrc, :a)
 
-          @registers.a += (value + carry_in)
+          # Opcodes: 0x10 - 0x1F
+          instructions[0x10] = Instructions::BitShifts.new(:rl, :b)
+          instructions[0x11] = Instructions::BitShifts.new(:rl, :c)
+          instructions[0x12] = Instructions::BitShifts.new(:rl, :d)
+          instructions[0x13] = Instructions::BitShifts.new(:rl, :e)
+          instructions[0x14] = Instructions::BitShifts.new(:rl, :h)
+          instructions[0x15] = Instructions::BitShifts.new(:rl, :l)
+          instructions[0x16] = Instructions::BitShifts.new(:rl_mem_hl)
+          instructions[0x17] = Instructions::BitShifts.new(:rl, :a)
+          instructions[0x18] = Instructions::BitShifts.new(:rr, :b)
+          instructions[0x19] = Instructions::BitShifts.new(:rr, :c)
+          instructions[0x1A] = Instructions::BitShifts.new(:rr, :d)
+          instructions[0x1B] = Instructions::BitShifts.new(:rr, :e)
+          instructions[0x1C] = Instructions::BitShifts.new(:rr, :h)
+          instructions[0x1D] = Instructions::BitShifts.new(:rr, :l)
+          instructions[0x1E] = Instructions::BitShifts.new(:rr_mem_hl)
+          instructions[0x1F] = Instructions::BitShifts.new(:rr, :a)
 
-          z_flag = @registers.a.zero? ? 1 : 0
-          n_flag = 0
+          # Opcodes: 0x20 - 0x2F
+          instructions[0x20] = Instructions::BitShifts.new(:sla, :b)
+          instructions[0x21] = Instructions::BitShifts.new(:sla, :c)
+          instructions[0x22] = Instructions::BitShifts.new(:sla, :d)
+          instructions[0x23] = Instructions::BitShifts.new(:sla, :e)
+          instructions[0x24] = Instructions::BitShifts.new(:sla, :h)
+          instructions[0x25] = Instructions::BitShifts.new(:sla, :l)
+          instructions[0x26] = Instructions::BitShifts.new(:sla_mem_hl)
+          instructions[0x27] = Instructions::BitShifts.new(:sla, :a)
+          instructions[0x28] = Instructions::BitShifts.new(:sra, :b)
+          instructions[0x29] = Instructions::BitShifts.new(:sra, :c)
+          instructions[0x2A] = Instructions::BitShifts.new(:sra, :d)
+          instructions[0x2B] = Instructions::BitShifts.new(:sra, :e)
+          instructions[0x2C] = Instructions::BitShifts.new(:sra, :h)
+          instructions[0x2D] = Instructions::BitShifts.new(:sra, :l)
+          instructions[0x2E] = Instructions::BitShifts.new(:sra_mem_hl)
+          instructions[0x2F] = Instructions::BitShifts.new(:sra, :a)
 
-          @registers.set_flags(z: z_flag, n: n_flag, h: h_flag, c: c_flag)
-        end
+          # Opcodes: 0x30 - 0x3F
+          instructions[0x30] = Instructions::BitShifts.new(:swap, :b)
+          instructions[0x31] = Instructions::BitShifts.new(:swap, :c)
+          instructions[0x32] = Instructions::BitShifts.new(:swap, :d)
+          instructions[0x33] = Instructions::BitShifts.new(:swap, :e)
+          instructions[0x34] = Instructions::BitShifts.new(:swap, :h)
+          instructions[0x35] = Instructions::BitShifts.new(:swap, :l)
+          instructions[0x36] = Instructions::BitShifts.new(:swap_mem_hl)
+          instructions[0x37] = Instructions::BitShifts.new(:swap, :a)
+          instructions[0x38] = Instructions::BitShifts.new(:srl, :b)
+          instructions[0x39] = Instructions::BitShifts.new(:srl, :c)
+          instructions[0x3A] = Instructions::BitShifts.new(:srl, :d)
+          instructions[0x3B] = Instructions::BitShifts.new(:srl, :e)
+          instructions[0x3C] = Instructions::BitShifts.new(:srl, :h)
+          instructions[0x3D] = Instructions::BitShifts.new(:srl, :l)
+          instructions[0x3E] = Instructions::BitShifts.new(:srl_mem_hl)
+          instructions[0x3F] = Instructions::BitShifts.new(:srl, :a)
 
-        # 4 t-cycles
-        # Uses the 8-bit value from a given register for the addition with carry
-        #
-        # @param reg8 [Symbol] => 8-bit Register to be used
-        #
-        def adc_a_r8(reg8)
-          reg8_value = @registers.send(reg8)
-          adc_a(reg8_value)
-        end
+          # Opcodes: 0x40 - 0x4F
+          instructions[0x40] = Instructions::BitControl.new(:bit, 0, :b)
+          instructions[0x41] = Instructions::BitControl.new(:bit, 0, :c)
+          instructions[0x42] = Instructions::BitControl.new(:bit, 0, :d)
+          instructions[0x43] = Instructions::BitControl.new(:bit, 0, :e)
+          instructions[0x44] = Instructions::BitControl.new(:bit, 0, :h)
+          instructions[0x45] = Instructions::BitControl.new(:bit, 0, :l)
+          instructions[0x46] = Instructions::BitControl.new(:bit_mem_hl, 0)
+          instructions[0x47] = Instructions::BitControl.new(:bit, 0, :a)
+          instructions[0x48] = Instructions::BitControl.new(:bit, 1, :b)
+          instructions[0x49] = Instructions::BitControl.new(:bit, 1, :c)
+          instructions[0x4A] = Instructions::BitControl.new(:bit, 1, :d)
+          instructions[0x4B] = Instructions::BitControl.new(:bit, 1, :e)
+          instructions[0x4C] = Instructions::BitControl.new(:bit, 1, :h)
+          instructions[0x4D] = Instructions::BitControl.new(:bit, 1, :l)
+          instructions[0x4E] = Instructions::BitControl.new(:bit_mem_hl, 1)
+          instructions[0x4F] = Instructions::BitControl.new(:bit, 1, :a)
 
-        # 8 t-cycles
-        # Needs to fetch the next byte after the opcode
-        # And uses that as value for the addition with carry
-        #
-        def adc_a_d8
-          case @ticks
-          when 5 then request_read
-          when 6..7 then wait
-          when 8
-            byte = receive_data
-            adc_a(byte)
-          end
-        end
+          # Opcodes: 0x50 - 0x5F
+          instructions[0x50] = Instructions::BitControl.new(:bit, 2, :b)
+          instructions[0x51] = Instructions::BitControl.new(:bit, 2, :c)
+          instructions[0x52] = Instructions::BitControl.new(:bit, 2, :d)
+          instructions[0x53] = Instructions::BitControl.new(:bit, 2, :e)
+          instructions[0x54] = Instructions::BitControl.new(:bit, 2, :h)
+          instructions[0x55] = Instructions::BitControl.new(:bit, 2, :l)
+          instructions[0x56] = Instructions::BitControl.new(:bit_mem_hl, 2)
+          instructions[0x57] = Instructions::BitControl.new(:bit, 2, :a)
+          instructions[0x58] = Instructions::BitControl.new(:bit, 3, :b)
+          instructions[0x59] = Instructions::BitControl.new(:bit, 3, :c)
+          instructions[0x5A] = Instructions::BitControl.new(:bit, 3, :d)
+          instructions[0x5B] = Instructions::BitControl.new(:bit, 3, :e)
+          instructions[0x5C] = Instructions::BitControl.new(:bit, 3, :h)
+          instructions[0x5D] = Instructions::BitControl.new(:bit, 3, :l)
+          instructions[0x5E] = Instructions::BitControl.new(:bit_mem_hl, 3)
+          instructions[0x5F] = Instructions::BitControl.new(:bit, 3, :a)
 
-        # 8 t-cycles
-        # Puts the value of the HL register onto the bus
-        # Fetches the byte in memory from that address
-        # Uses that byte value to perform the addition with carry
-        #
-        def adc_a_mem_hl
-          case @ticks
-          when 5 then request_read(@registers.hl)
-          when 6..7 then wait
-          when 8
-            byte = receive_data
-            adc_a(byte)
-          end
-        end
+          # Opcodes: 0x60 - 0x6F
+          instructions[0x60] = Instructions::BitControl.new(:bit, 4, :b)
+          instructions[0x61] = Instructions::BitControl.new(:bit, 4, :c)
+          instructions[0x62] = Instructions::BitControl.new(:bit, 4, :d)
+          instructions[0x63] = Instructions::BitControl.new(:bit, 4, :e)
+          instructions[0x64] = Instructions::BitControl.new(:bit, 4, :h)
+          instructions[0x65] = Instructions::BitControl.new(:bit, 4, :l)
+          instructions[0x66] = Instructions::BitControl.new(:bit_mem_hl, 4)
+          instructions[0x67] = Instructions::BitControl.new(:bit, 4, :a)
+          instructions[0x68] = Instructions::BitControl.new(:bit, 5, :b)
+          instructions[0x69] = Instructions::BitControl.new(:bit, 5, :c)
+          instructions[0x6A] = Instructions::BitControl.new(:bit, 5, :d)
+          instructions[0x6B] = Instructions::BitControl.new(:bit, 5, :e)
+          instructions[0x6C] = Instructions::BitControl.new(:bit, 5, :h)
+          instructions[0x6D] = Instructions::BitControl.new(:bit, 5, :l)
+          instructions[0x6E] = Instructions::BitControl.new(:bit_mem_hl, 5)
+          instructions[0x6F] = Instructions::BitControl.new(:bit, 5, :a)
 
-        # ========================================================================================
-        # Subtraction with Carry (SBC)
-        #
-        # Subtracts the value of a given 8-bit register from the A register
-        # Also subtracts the value of the carry flag and stores the result into A
-        # A = A - value - c_flag
-        #
-        # Subtraction Flag is always set to 1
-        # The other flags need to be calculated depending on the result
-        #
-        # @param value [Integer] => Value to subtract from A register
-        #
-        def sbc(value)
-          carry_in = @registers.c_flag
+          # Opcodes: 0x70 - 0x7F
+          instructions[0x70] = Instructions::BitControl.new(:bit, 6, :b)
+          instructions[0x71] = Instructions::BitControl.new(:bit, 6, :c)
+          instructions[0x72] = Instructions::BitControl.new(:bit, 6, :d)
+          instructions[0x73] = Instructions::BitControl.new(:bit, 6, :e)
+          instructions[0x74] = Instructions::BitControl.new(:bit, 6, :h)
+          instructions[0x75] = Instructions::BitControl.new(:bit, 6, :l)
+          instructions[0x76] = Instructions::BitControl.new(:bit_mem_hl, 6)
+          instructions[0x77] = Instructions::BitControl.new(:bit, 6, :a)
+          instructions[0x78] = Instructions::BitControl.new(:bit, 7, :b)
+          instructions[0x79] = Instructions::BitControl.new(:bit, 7, :c)
+          instructions[0x7A] = Instructions::BitControl.new(:bit, 7, :d)
+          instructions[0x7B] = Instructions::BitControl.new(:bit, 7, :e)
+          instructions[0x7C] = Instructions::BitControl.new(:bit, 7, :h)
+          instructions[0x7D] = Instructions::BitControl.new(:bit, 7, :l)
+          instructions[0x7E] = Instructions::BitControl.new(:bit_mem_hl, 7)
+          instructions[0x7F] = Instructions::BitControl.new(:bit, 7, :a)
 
-          # Calculate the Half Carry and Carry Flags before the operation
-          #
-          h_flag = (@registers.a & 0x0F) < ((value & 0x0F) + carry_in)
-          c_flag = @registers.a < (value + carry_in)
+          # Opcodes: 0x80 - 0x8F
+          instructions[0x80] = Instructions::BitControl.new(:res, 0, :b)
+          instructions[0x81] = Instructions::BitControl.new(:res, 0, :c)
+          instructions[0x82] = Instructions::BitControl.new(:res, 0, :d)
+          instructions[0x83] = Instructions::BitControl.new(:res, 0, :e)
+          instructions[0x84] = Instructions::BitControl.new(:res, 0, :h)
+          instructions[0x85] = Instructions::BitControl.new(:res, 0, :l)
+          instructions[0x86] = Instructions::BitControl.new(:res_mem_hl, 0)
+          instructions[0x87] = Instructions::BitControl.new(:res, 0, :a)
+          instructions[0x88] = Instructions::BitControl.new(:res, 1, :b)
+          instructions[0x89] = Instructions::BitControl.new(:res, 1, :c)
+          instructions[0x8A] = Instructions::BitControl.new(:res, 1, :d)
+          instructions[0x8B] = Instructions::BitControl.new(:res, 1, :e)
+          instructions[0x8C] = Instructions::BitControl.new(:res, 1, :h)
+          instructions[0x8D] = Instructions::BitControl.new(:res, 1, :l)
+          instructions[0x8E] = Instructions::BitControl.new(:res_mem_hl, 1)
+          instructions[0x8F] = Instructions::BitControl.new(:res, 1, :a)
 
-          @registers.a -= (value + carry_in)
+          # Opcodes: 0x90 - 0x9F
+          instructions[0x90] = Instructions::BitControl.new(:res, 2, :b)
+          instructions[0x91] = Instructions::BitControl.new(:res, 2, :c)
+          instructions[0x92] = Instructions::BitControl.new(:res, 2, :d)
+          instructions[0x93] = Instructions::BitControl.new(:res, 2, :e)
+          instructions[0x94] = Instructions::BitControl.new(:res, 2, :h)
+          instructions[0x95] = Instructions::BitControl.new(:res, 2, :l)
+          instructions[0x96] = Instructions::BitControl.new(:res_mem_hl, 2)
+          instructions[0x97] = Instructions::BitControl.new(:res, 2, :a)
+          instructions[0x98] = Instructions::BitControl.new(:res, 3, :b)
+          instructions[0x99] = Instructions::BitControl.new(:res, 3, :c)
+          instructions[0x9A] = Instructions::BitControl.new(:res, 3, :d)
+          instructions[0x9B] = Instructions::BitControl.new(:res, 3, :e)
+          instructions[0x9C] = Instructions::BitControl.new(:res, 3, :h)
+          instructions[0x9D] = Instructions::BitControl.new(:res, 3, :l)
+          instructions[0x9E] = Instructions::BitControl.new(:res_mem_hl, 3)
+          instructions[0x9F] = Instructions::BitControl.new(:res, 3, :a)
 
-          z_flag = @registers.a.zero? ? 1 : 0
+          # Opcodes: 0xA0 - 0xAF
+          instructions[0xA0] = Instructions::BitControl.new(:res, 4, :b)
+          instructions[0xA1] = Instructions::BitControl.new(:res, 4, :c)
+          instructions[0xA2] = Instructions::BitControl.new(:res, 4, :d)
+          instructions[0xA3] = Instructions::BitControl.new(:res, 4, :e)
+          instructions[0xA4] = Instructions::BitControl.new(:res, 4, :h)
+          instructions[0xA5] = Instructions::BitControl.new(:res, 4, :l)
+          instructions[0xA6] = Instructions::BitControl.new(:res_mem_hl, 4)
+          instructions[0xA7] = Instructions::BitControl.new(:res, 4, :a)
+          instructions[0xA8] = Instructions::BitControl.new(:res, 5, :b)
+          instructions[0xA9] = Instructions::BitControl.new(:res, 5, :c)
+          instructions[0xAA] = Instructions::BitControl.new(:res, 5, :d)
+          instructions[0xAB] = Instructions::BitControl.new(:res, 5, :e)
+          instructions[0xAC] = Instructions::BitControl.new(:res, 5, :h)
+          instructions[0xAD] = Instructions::BitControl.new(:res, 5, :l)
+          instructions[0xAE] = Instructions::BitControl.new(:res_mem_hl, 5)
+          instructions[0xAF] = Instructions::BitControl.new(:res, 5, :a)
 
-          @registers.set_flags(z: z_flag, n: 1, h: h_flag, c: c_flag)
-        end
+          # Opcodes: 0xB0 - 0xBF
+          instructions[0xB0] = Instructions::BitControl.new(:res, 6, :b)
+          instructions[0xB1] = Instructions::BitControl.new(:res, 6, :c)
+          instructions[0xB2] = Instructions::BitControl.new(:res, 6, :d)
+          instructions[0xB3] = Instructions::BitControl.new(:res, 6, :e)
+          instructions[0xB4] = Instructions::BitControl.new(:res, 6, :h)
+          instructions[0xB5] = Instructions::BitControl.new(:res, 6, :l)
+          instructions[0xB6] = Instructions::BitControl.new(:res_mem_hl, 6)
+          instructions[0xB7] = Instructions::BitControl.new(:res, 6, :a)
+          instructions[0xB8] = Instructions::BitControl.new(:res, 7, :b)
+          instructions[0xB9] = Instructions::BitControl.new(:res, 7, :c)
+          instructions[0xBA] = Instructions::BitControl.new(:res, 7, :d)
+          instructions[0xBB] = Instructions::BitControl.new(:res, 7, :e)
+          instructions[0xBC] = Instructions::BitControl.new(:res, 7, :h)
+          instructions[0xBD] = Instructions::BitControl.new(:res, 7, :l)
+          instructions[0xBE] = Instructions::BitControl.new(:res_mem_hl, 7)
+          instructions[0xBF] = Instructions::BitControl.new(:res, 7, :a)
 
-        # 4 t-cycles
-        # Uses the 8-bit value from a given register for the subtraction
-        #
-        # @param reg8 [Symbol]
-        #
-        def sbc_a_r8(reg8)
-          r8_value = @registers.send(reg8)
-          sbc(r8_value)
-        end
+          # Opcodes: 0xC0 - 0xCF
+          instructions[0xC0] = Instructions::BitControl.new(:set, 0, :b)
+          instructions[0xC1] = Instructions::BitControl.new(:set, 0, :c)
+          instructions[0xC2] = Instructions::BitControl.new(:set, 0, :d)
+          instructions[0xC3] = Instructions::BitControl.new(:set, 0, :e)
+          instructions[0xC4] = Instructions::BitControl.new(:set, 0, :h)
+          instructions[0xC5] = Instructions::BitControl.new(:set, 0, :l)
+          instructions[0xC6] = Instructions::BitControl.new(:set_mem_hl, 0)
+          instructions[0xC7] = Instructions::BitControl.new(:set, 0, :a)
+          instructions[0xC8] = Instructions::BitControl.new(:set, 1, :b)
+          instructions[0xC9] = Instructions::BitControl.new(:set, 1, :c)
+          instructions[0xCA] = Instructions::BitControl.new(:set, 1, :d)
+          instructions[0xCB] = Instructions::BitControl.new(:set, 1, :e)
+          instructions[0xCC] = Instructions::BitControl.new(:set, 1, :h)
+          instructions[0xCD] = Instructions::BitControl.new(:set, 1, :l)
+          instructions[0xCE] = Instructions::BitControl.new(:set_mem_hl, 1)
+          instructions[0xCF] = Instructions::BitControl.new(:set, 1, :a)
 
-        # 8 t-cycles
-        # Needs to fetch the next byte after the opcode
-        # And uses that as value for the subtraction
-        #
-        def sbc_a_d8
-          case @ticks
-          when 5 then request_read
-          when 6..7 then wait
-          when 8
-            byte = receive_data
-            sbc(byte)
-          end
-        end
+          # Opcodes: 0xD0 - 0xDF
+          instructions[0xD0] = Instructions::BitControl.new(:set, 2, :b)
+          instructions[0xD1] = Instructions::BitControl.new(:set, 2, :c)
+          instructions[0xD2] = Instructions::BitControl.new(:set, 2, :d)
+          instructions[0xD3] = Instructions::BitControl.new(:set, 2, :e)
+          instructions[0xD4] = Instructions::BitControl.new(:set, 2, :h)
+          instructions[0xD5] = Instructions::BitControl.new(:set, 2, :l)
+          instructions[0xD6] = Instructions::BitControl.new(:set_mem_hl, 2)
+          instructions[0xD7] = Instructions::BitControl.new(:set, 2, :a)
+          instructions[0xD8] = Instructions::BitControl.new(:set, 3, :b)
+          instructions[0xD9] = Instructions::BitControl.new(:set, 3, :c)
+          instructions[0xDA] = Instructions::BitControl.new(:set, 3, :d)
+          instructions[0xDB] = Instructions::BitControl.new(:set, 3, :e)
+          instructions[0xDC] = Instructions::BitControl.new(:set, 3, :h)
+          instructions[0xDD] = Instructions::BitControl.new(:set, 3, :l)
+          instructions[0xDE] = Instructions::BitControl.new(:set_mem_hl, 3)
+          instructions[0xDF] = Instructions::BitControl.new(:set, 3, :a)
 
-        # 8 t-cycles
-        # Puts the value of the HL register onto the bus
-        # Fetches the byte in memory from that address
-        # Uses that byte value to perform the subtraction
-        #
-        def sbc_a_mem_hl
-          case @ticks
-          when 5 then request_read(@registers.hl)
-          when 6..7 then wait
-          when 8
-            byte = receive_data
-            sbc(byte)
-          end
-        end
+          # Opcodes: 0xE0 - 0xEF
+          instructions[0xE0] = Instructions::BitControl.new(:set, 4, :b)
+          instructions[0xE1] = Instructions::BitControl.new(:set, 4, :c)
+          instructions[0xE2] = Instructions::BitControl.new(:set, 4, :d)
+          instructions[0xE3] = Instructions::BitControl.new(:set, 4, :e)
+          instructions[0xE4] = Instructions::BitControl.new(:set, 4, :h)
+          instructions[0xE5] = Instructions::BitControl.new(:set, 4, :l)
+          instructions[0xE6] = Instructions::BitControl.new(:set_mem_hl, 4)
+          instructions[0xE7] = Instructions::BitControl.new(:set, 4, :a)
+          instructions[0xE8] = Instructions::BitControl.new(:set, 5, :b)
+          instructions[0xE9] = Instructions::BitControl.new(:set, 5, :c)
+          instructions[0xEA] = Instructions::BitControl.new(:set, 5, :d)
+          instructions[0xEB] = Instructions::BitControl.new(:set, 5, :e)
+          instructions[0xEC] = Instructions::BitControl.new(:set, 5, :h)
+          instructions[0xED] = Instructions::BitControl.new(:set, 5, :l)
+          instructions[0xEE] = Instructions::BitControl.new(:set_mem_hl, 5)
+          instructions[0xEF] = Instructions::BitControl.new(:set, 5, :a)
 
-        # ========================================================================================
-        # Push into the Stack (PUSH)
-        #
-        # Push the value from one of the 16-bit special registers into the stack
-        # Takes 4 m-cycles or 16 t-cycles
-        #
-        # Decrement the Stack Pointer first
-        # Grab the Lower 8 bits of the value and push into the stack
-        # Decrement the Stack Pointer again
-        # Grab the Higher 8 bits of the value and push into the stack
-        #
-        def push_r16(operand)
-          case @ticks
-          when 9
-            @msb = (@registers.send(operand) >> 8) & 0xFF
-            @registers.sp -= 1
-            @bus.write_byte(@registers.sp, @msb)
-          when 13
-            @lsb = @registers.send(operand) & 0xFF
-            @registers.sp -= 1
-            @bus.write_byte(@registers.sp, @lsb)
-          else
-            wait
-          end
-        end
+          # Opcodes: 0xF0 - 0xFF
+          instructions[0xF0] = Instructions::BitControl.new(:set, 6, :b)
+          instructions[0xF1] = Instructions::BitControl.new(:set, 6, :c)
+          instructions[0xF2] = Instructions::BitControl.new(:set, 6, :d)
+          instructions[0xF3] = Instructions::BitControl.new(:set, 6, :e)
+          instructions[0xF4] = Instructions::BitControl.new(:set, 6, :h)
+          instructions[0xF5] = Instructions::BitControl.new(:set, 6, :l)
+          instructions[0xF6] = Instructions::BitControl.new(:set_mem_hl, 6)
+          instructions[0xF7] = Instructions::BitControl.new(:set, 6, :a)
+          instructions[0xF8] = Instructions::BitControl.new(:set, 7, :b)
+          instructions[0xF9] = Instructions::BitControl.new(:set, 7, :c)
+          instructions[0xFA] = Instructions::BitControl.new(:set, 7, :d)
+          instructions[0xFB] = Instructions::BitControl.new(:set, 7, :e)
+          instructions[0xFC] = Instructions::BitControl.new(:set, 7, :h)
+          instructions[0xFD] = Instructions::BitControl.new(:set, 7, :l)
+          instructions[0xFE] = Instructions::BitControl.new(:set_mem_hl, 7)
+          instructions[0xFF] = Instructions::BitControl.new(:set, 7, :a)
 
-        # ========================================================================================
-        # Pop out of the Stack (POP)
-        #
-        # Pops 2 bytes from the stack into a 16-bit register
-        # Increments the Stack Pointer each time
-        #
-        # @param operand [Symbol] => Setter method for a special register
-        # Possible values: :af=, :bc=, :de=, :hl=
-        #
-        def pop_r16(operand)
-          case @ticks
-          when 5
-            @lsb = fetch_byte
-            @registers.sp += 1
-          when 9
-            @msb = fetch_byte
-            @registers.sp += 1
-          when 12
-            value = (@msb << 8) | @lsb
-            value &= operand == :af= ? 0xFFF0 : 0xFFFF
-            @registers.send(operand, value)
-          else
-            wait
-          end
-        end
-
-        # Disable interrupts for the Cpu
-        def di
-          case @ticks
-          when 4
-            puts 'Disabling interrupts...'
-            @ime_flag = false
-          end
+          instructions
         end
       end
     end

@@ -19,36 +19,44 @@ module Spinel
           @registers = Registers.new
 
           @ime_flag = true
+          @ime_flag_schedule = :none
           @halted = false
+          @stopped = false
 
           # Track internal states between ticks/cycles
           @ticks = 1
           @opcode = nil
           @instruction = nil
 
+          @cb_prefix_mode = false
           @instructions = Util::Cpu::InstructionSet.build_unprefixed
-          # @prefix_instructions = Util::Cpu::InstructionSet.build_cb_prefixed
+          @cb_instructions = Util::Cpu::InstructionSet.build_cb_prefixed
         end
 
         # Each tick should be equivalent to 1 t-cycle
         # 1 machine cycle (m-cycle) = 4 t-cycles
         #
         def tick
-          return false if @halted
+          if !@halted && !@stopped
+            # First machine cycle (t-cycles 1-4)
+            puts "Ticks: #{@ticks}"
+            case @ticks
+            when 1 then request_read
+            when 2..3 then wait
+            when 4 then receive_data && execute
+            else execute
+            end
 
-          # First machine cycle (t-cycles 1-4)
-          puts "Ticks: #{@ticks}"
-          case @ticks
-          when 1 then request_read
-          when 2..3 then wait
-          when 4 then receive_data && execute
-          else execute
-          end
-
-          if @instruction && @ticks == @instruction.cycles
-            reset_states
+            if @instruction && @ticks == @instruction.cycles
+              @cb_prefix_mode = false unless @opcode == 0xCB
+              update_ime_flag unless [0xF3, 0xFB].include?(@opcode) # DI / EI opcodes
+              handle_interrupts
+              reset_states
+            else
+              @ticks += 1
+            end
           else
-            @ticks += 1
+            handle_interrupts
           end
         end
 
@@ -72,9 +80,12 @@ module Spinel
           @opcode
         end
 
-        def request_write(address, value)
-          puts "Writing 0x#{format('%02X', value)} into Address: 0x#{format('%04X', address)}"
-          @bus.write_byte(address, value)
+        def request_write(address)
+          @bus.request_write(address)
+        end
+
+        def confirm_write(value)
+          @bus.confirm_write(value)
         end
 
         private
@@ -84,7 +95,28 @@ module Spinel
         end
 
         def execute
-          @instructions[@opcode].execute(self)
+          instruction_set = @cb_prefix_mode ? @cb_instructions : @instructions
+          instruction_set[@opcode].execute(self)
+        end
+
+        def update_ime_flag
+          return false if @ime_flag_schedule == :none
+
+          @ime_flag = true if @ime_flag_schedule == :enable
+          @ime_flag = false if @ime_flag_schedule == :disable
+
+          @ime_flag_schedule = :none
+        end
+
+        def handle_interrupts
+          pending_interrupts = ie_register & ig_register
+          return if pending_interrupts.zero?
+
+          @halted = false
+          return unless @ime_flag
+
+          # TODO: Serve interrupts by priority?
+          serve_pending_interrupts = :not_implemented
         end
 
         def reset_states
