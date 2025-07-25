@@ -9,7 +9,7 @@ module Spinel
         class BitControl < Base
           # @param operation [Symbol] Which type of Bit Control operation
           #
-          def initialize(operation, bit_position, operand)
+          def initialize(operation, bit_position, operand = nil)
             @operation = operation
             @bit_position = bit_position
             @operand = operand

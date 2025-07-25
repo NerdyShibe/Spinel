@@ -8,78 +8,46 @@ module Spinel
         #
         class BitShifts < Base
           # @param operation [Symbol] Which type of Bit Shift operation
-          # @param register [Symbol] 8-bit register to perform the operation, if any
+          # @param operand [Symbol] Either a 8-bit register or :mem_hl => [HL]
           #
-          def initialize(operation, register = nil)
+          def initialize(operation, operand)
             @operation = operation
-            @register = register
+            @operand = operand
 
             super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
+              mnemonic: current_mnemonic,
+              bytes: current_bytes,
+              cycles: current_cycles
             )
           end
 
           def execute(cpu)
             case @operation
-            when :rlc         then rlc(cpu)
-            when :rlc_mem_hl  then rlc_mem_hl(cpu)
-            when :rrc         then rrc(cpu)
-            when :rrc_mem_hl  then rrc_mem_hl(cpu)
-            when :rl          then rl(cpu)
-            when :rl_mem_hl   then rl_mem_hl(cpu)
-            when :rr          then rr(cpu)
-            when :rr_mem_hl   then rr_mem_hl(cpu)
-            when :sla         then sla(cpu)
-            when :sla_mem_hl  then sla_mem_hl(cpu)
-            when :sra         then sra(cpu)
-            when :sra_mem_hl  then sra_mem_hl(cpu)
-            when :swap        then swap(cpu)
-            when :swap_mem_hl then swap_mem_hl(cpu)
-            when :srl         then srl(cpu)
-            when :srl_mem_hl  then srl_mem_hl(cpu)
+            when :rlc  then rlc(cpu)
+            when :rrc  then rrc(cpu)
+            when :rl   then rl(cpu)
+            when :rr   then rr(cpu)
+            when :sla  then sla(cpu)
+            when :sra  then sra(cpu)
+            when :swap then swap(cpu)
+            when :srl  then srl(cpu)
             else raise ArgumentError, "Invalid Bit Shift operation: #{@operation}."
             end
           end
 
           private
 
-          def metadata
-            case @operation
-            when :rlc
-              { mnemonic: "RLC #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :rlc_mem_hl
-              { mnemonic: 'RLC [HL]', bytes: 2, cycles: 16 }
-            when :rrc
-              { mnemonic: "RRC #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :rrc_mem_hl
-              { mnemonic: 'RRC [HL]', bytes: 2, cycles: 16 }
-            when :rl
-              { mnemonic: "RL #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :rl_mem_hl
-              { mnemonic: 'RL [HL]', bytes: 2, cycles: 16 }
-            when :rr
-              { mnemonic: "RR #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :rr_mem_hl
-              { mnemonic: 'RR [HL]', bytes: 2, cycles: 16 }
-            when :sla
-              { mnemonic: "SLA #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :sla_mem_hl
-              { mnemonic: 'SLA [HL]', bytes: 2, cycles: 16 }
-            when :sra
-              { mnemonic: "SRA #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :sra_mem_hl
-              { mnemonic: 'SRA [HL]', bytes: 2, cycles: 16 }
-            when :swap
-              { mnemonic: "SWAP #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :swap_mem_hl
-              { mnemonic: 'SWAP [HL]', bytes: 2, cycles: 16 }
-            when :srl
-              { mnemonic: "SRL #{@register.to_s.upcase}", bytes: 2, cycles: 8 }
-            when :srl_mem_hl
-              { mnemonic: 'SRL [HL]', bytes: 2, cycles: 16 }
-            end
+          def current_mnemonic
+            operand = @operand == :mem_hl ? '[HL]' : @operand
+            [@operation, operand].join(' ').upcase
+          end
+
+          def current_bytes
+            2
+          end
+
+          def current_cycles
+            @operand == :mem_hl ? 16 : 8
           end
 
           def update_flags(cpu, result, bit_shifted)
@@ -89,7 +57,13 @@ module Spinel
             cpu.registers.c_flag = (bit_shifted == 1)
           end
 
+          # Rotate Left Circular
+          #
           def rlc(cpu)
+            @operand == :mem_hl ? rlc_mem_hl(cpu) : rlc_reg8(cpu)
+          end
+
+          def rlc_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -120,7 +94,13 @@ module Spinel
             end
           end
 
+          # Rotate Right Circular
+          #
           def rrc(cpu)
+            @operand == :mem_hl ? rrc_mem_hl(cpu) : rrc_reg8(cpu)
+          end
+
+          def rrc_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -151,7 +131,13 @@ module Spinel
             end
           end
 
+          # Rotate Left (Carry)
+          #
           def rl(cpu)
+            @operand == :mem_hl ? rl_mem_hl(cpu) : rl_reg8(cpu)
+          end
+
+          def rl_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -184,7 +170,13 @@ module Spinel
             end
           end
 
+          # Rotate Right (Carry)
+          #
           def rr(cpu)
+            @operand == :mem_hl ? rr_mem_hl(cpu) : rr_reg8(cpu)
+          end
+
+          def rr_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -220,6 +212,10 @@ module Spinel
           # Shift Left Arithmetic
           #
           def sla(cpu)
+            @operand == :mem_hl ? sla_mem_hl(cpu) : sla_reg8(cpu)
+          end
+
+          def sla_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -253,6 +249,10 @@ module Spinel
           # Shift Right Arithmetic
           #
           def sra(cpu)
+            @operand == :mem_hl ? sra_mem_hl(cpu) : sra_reg8(cpu)
+          end
+
+          def sra_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -285,7 +285,13 @@ module Spinel
             end
           end
 
+          # Swaps the Lower4 and Upper4 nibbles
+          #
           def swap(cpu)
+            @operand == :mem_hl ? swap_mem_hl(cpu) : swap_reg8(cpu)
+          end
+
+          def swap_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)
@@ -326,6 +332,10 @@ module Spinel
           # Shift Right Logic
           #
           def srl(cpu)
+            @operand == :mem_hl ? srl_mem_hl(cpu) : srl_reg8(cpu)
+          end
+
+          def srl_reg8(cpu)
             case cpu.ticks
             when 8
               register = cpu.registers.send(@register)

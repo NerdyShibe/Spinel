@@ -301,7 +301,7 @@ module Spinel
         end
 
         def self.build_cb_prefixed
-          instructions = Array.new(256, Instructions::NotImplemented.new)
+          instructions = Array.new(256)
 
           # Opcodes: 0x00 - 0x0F
           instructions[0x00] = Instructions::BitShifts.new(:rlc, :b)
@@ -310,7 +310,7 @@ module Spinel
           instructions[0x03] = Instructions::BitShifts.new(:rlc, :e)
           instructions[0x04] = Instructions::BitShifts.new(:rlc, :h)
           instructions[0x05] = Instructions::BitShifts.new(:rlc, :l)
-          instructions[0x06] = Instructions::BitShifts.new(:rlc_mem_hl)
+          instructions[0x06] = Instructions::BitShifts.new(:rlc, :mem_hl)
           instructions[0x07] = Instructions::BitShifts.new(:rlc, :a)
           instructions[0x08] = Instructions::BitShifts.new(:rrc, :b)
           instructions[0x09] = Instructions::BitShifts.new(:rrc, :c)
@@ -318,7 +318,7 @@ module Spinel
           instructions[0x0B] = Instructions::BitShifts.new(:rrc, :e)
           instructions[0x0C] = Instructions::BitShifts.new(:rrc, :h)
           instructions[0x0D] = Instructions::BitShifts.new(:rrc, :l)
-          instructions[0x0E] = Instructions::BitShifts.new(:rrc_mem_hl)
+          instructions[0x0E] = Instructions::BitShifts.new(:rrc, :mem_hl)
           instructions[0x0F] = Instructions::BitShifts.new(:rrc, :a)
 
           # Opcodes: 0x10 - 0x1F
@@ -328,7 +328,7 @@ module Spinel
           instructions[0x13] = Instructions::BitShifts.new(:rl, :e)
           instructions[0x14] = Instructions::BitShifts.new(:rl, :h)
           instructions[0x15] = Instructions::BitShifts.new(:rl, :l)
-          instructions[0x16] = Instructions::BitShifts.new(:rl_mem_hl)
+          instructions[0x16] = Instructions::BitShifts.new(:rl, :mem_hl)
           instructions[0x17] = Instructions::BitShifts.new(:rl, :a)
           instructions[0x18] = Instructions::BitShifts.new(:rr, :b)
           instructions[0x19] = Instructions::BitShifts.new(:rr, :c)
@@ -336,7 +336,7 @@ module Spinel
           instructions[0x1B] = Instructions::BitShifts.new(:rr, :e)
           instructions[0x1C] = Instructions::BitShifts.new(:rr, :h)
           instructions[0x1D] = Instructions::BitShifts.new(:rr, :l)
-          instructions[0x1E] = Instructions::BitShifts.new(:rr_mem_hl)
+          instructions[0x1E] = Instructions::BitShifts.new(:rr, :mem_hl)
           instructions[0x1F] = Instructions::BitShifts.new(:rr, :a)
 
           # Opcodes: 0x20 - 0x2F
@@ -346,7 +346,7 @@ module Spinel
           instructions[0x23] = Instructions::BitShifts.new(:sla, :e)
           instructions[0x24] = Instructions::BitShifts.new(:sla, :h)
           instructions[0x25] = Instructions::BitShifts.new(:sla, :l)
-          instructions[0x26] = Instructions::BitShifts.new(:sla_mem_hl)
+          instructions[0x26] = Instructions::BitShifts.new(:sla, :mem_hl)
           instructions[0x27] = Instructions::BitShifts.new(:sla, :a)
           instructions[0x28] = Instructions::BitShifts.new(:sra, :b)
           instructions[0x29] = Instructions::BitShifts.new(:sra, :c)
@@ -354,7 +354,7 @@ module Spinel
           instructions[0x2B] = Instructions::BitShifts.new(:sra, :e)
           instructions[0x2C] = Instructions::BitShifts.new(:sra, :h)
           instructions[0x2D] = Instructions::BitShifts.new(:sra, :l)
-          instructions[0x2E] = Instructions::BitShifts.new(:sra_mem_hl)
+          instructions[0x2E] = Instructions::BitShifts.new(:sra, :mem_hl)
           instructions[0x2F] = Instructions::BitShifts.new(:sra, :a)
 
           # Opcodes: 0x30 - 0x3F
@@ -364,7 +364,7 @@ module Spinel
           instructions[0x33] = Instructions::BitShifts.new(:swap, :e)
           instructions[0x34] = Instructions::BitShifts.new(:swap, :h)
           instructions[0x35] = Instructions::BitShifts.new(:swap, :l)
-          instructions[0x36] = Instructions::BitShifts.new(:swap_mem_hl)
+          instructions[0x36] = Instructions::BitShifts.new(:swap, :mem_hl)
           instructions[0x37] = Instructions::BitShifts.new(:swap, :a)
           instructions[0x38] = Instructions::BitShifts.new(:srl, :b)
           instructions[0x39] = Instructions::BitShifts.new(:srl, :c)
@@ -372,7 +372,7 @@ module Spinel
           instructions[0x3B] = Instructions::BitShifts.new(:srl, :e)
           instructions[0x3C] = Instructions::BitShifts.new(:srl, :h)
           instructions[0x3D] = Instructions::BitShifts.new(:srl, :l)
-          instructions[0x3E] = Instructions::BitShifts.new(:srl_mem_hl)
+          instructions[0x3E] = Instructions::BitShifts.new(:srl, :mem_hl)
           instructions[0x3F] = Instructions::BitShifts.new(:srl, :a)
 
           # Opcodes: 0x40 - 0x4F
