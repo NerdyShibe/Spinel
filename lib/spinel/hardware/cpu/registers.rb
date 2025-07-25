@@ -3,7 +3,7 @@
 
 module Spinel
   module Hardware
-    module SoC
+    class Cpu
       # Will hold the state of the CPU registers
       #
       class Registers
@@ -164,22 +164,11 @@ module Spinel
           end
         end
 
-        def set_value(register, value)
-          case register
-          when :a then self.a = value
-          when :b then self.b = value
-          when :c then self.c = value
-          when :d then self.d = value
-          when :e then self.e = value
-          when :h then self.h = value
-          when :l then self.l = value
-          when :bc then self.bc = value
-          when :de then self.de = value
-          when :hl then self.hl = value
-          when :sp then self.sp = value
-          else
-            abort('Operation not supported')
-          end
+        def update_flags(z:, n:, h:, c:) # rubocop:disable Naming/MethodParameterName
+          self.z_flag = z unless z.nil?
+          self.n_flag = n unless n.nil?
+          self.h_flag = h unless h.nil?
+          self.c_flag = c unless c.nil?
         end
       end
     end
