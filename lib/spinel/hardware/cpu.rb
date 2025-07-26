@@ -14,8 +14,10 @@ module Spinel
       attr_accessor :ime_flag_schedule
       attr_reader :registers, :ticks, :opcode, :instruction
 
-      def initialize(bus)
+      def initialize(emu, bus, interrupts)
+        @emu = emu
         @bus = bus
+        @interrupts = interrupts
         @registers = Registers.new
 
         @ime_flag = true
@@ -24,7 +26,7 @@ module Spinel
         @stopped = false
 
         # Track internal states between ticks/cycles
-        @ticks = 1
+        @m_cycles = 0
         @opcode = nil
         @instruction = nil
 
@@ -34,67 +36,43 @@ module Spinel
         # debugger
       end
 
-      # Each tick should be equivalent to 1 t-cycle
-      # 1 machine cycle (m-cycle) = 4 t-cycles
-      #
-      def tick
+      def run
         if !@halted && !@stopped
-          puts "#{@ticks}   " \
-               "#{format('%02X', @bus.read_byte(registers.pc))} " \
-               "#{format('%02X', @bus.read_byte(registers.pc + 1))} " \
-               "#{format('%02X', @bus.read_byte(registers.pc + 2))}"
-          case @ticks
-          when 1 then request_read
-          when 2..3 then wait
-          when 4 then receive_data && execute
-          else execute
-          end
-
-          if @instruction && @ticks == @instruction.cycles
-            @cb_prefix_mode = false unless @opcode == 0xCB
-            update_ime_flag unless [0xF3, 0xFB].include?(@opcode) # DI / EI opcodes
-            handle_interrupts
-            reset_states
-          else
-            @ticks += 1
-          end
+          debug_info
+          fetch_instruction
+          execute
         else
           handle_interrupts
         end
       end
 
-      def request_read(address = @registers.pc)
-        puts 'Requesting read from the bus...'
-        @bus.request_read(address)
-        @bus.locked = true
+      def advance_cycles
+        @m_cycles += 1
+        @emu.advance_cycles(4)
       end
 
-      def receive_data
-        byte = @bus.return_data
+      def bus_read(address)
+        byte = @bus.read_byte(address)
         @registers.pc += 1
-        @bus.locked = false
-        puts "Data received from the bus: 0x#{format('%02X', byte)}"
+        advance_cycles
 
-        return byte unless @opcode.nil?
-
-        @opcode = byte
-        @instruction = @instructions[@opcode]
-
-        @opcode
+        byte
       end
 
-      def request_write(address)
-        @bus.request_write(address)
+      def bus_write(address, value)
+        @bus.write_byte(address, value)
+        advance_cycles
       end
 
-      def confirm_write(value)
-        @bus.confirm_write(value)
+      def update_pc(address)
+        advance_cycles
+        @registers.pc = address
       end
 
       private
 
-      def wait
-        puts 'Waiting...'
+      def fetch_instruction
+        @opcode = bus_read(@registers.pc)
       end
 
       def execute
@@ -102,52 +80,47 @@ module Spinel
         instruction_set[@opcode].execute(self)
       end
 
-      def update_ime_flag
-        return false if @ime_flag_schedule == :none
-
-        @ime_flag = true if @ime_flag_schedule == :enable
-        @ime_flag = false if @ime_flag_schedule == :disable
-
-        @ime_flag_schedule = :none
-      end
-
       def handle_interrupts
-        return false
-        pending_interrupts = %w[ie_register ig_register]
-        return if pending_interrupts.empty?
+        pending_interrupts = @interrupts.read_byte(0xFFFF) & @interrupts.read_byte(0xFF0F)
+
+        return if pending_interrupts.zero?
 
         @halted = false
         return unless @ime_flag
 
-        # TODO: Serve interrupts by priority?
-        serve_pending_interrupts = :not_implemented
+        # TODO
+        puts 'Serve interrupts by priority 0 -> 5, 1 per cycle'
+        # serve_pending_interrupts = :not_implemented
       end
 
-      def reset_states
-        @ticks = 1
-        @instruction = nil
-        @opcode = nil
-
-        puts 'Current instruction is now completed, resetting states...'
-        puts "================================================================================================\n\n"
+      def debug_info
+        instruction_set = @cb_prefix_mode ? @cb_instructions : @instructions
+        instruction = instruction_set[@bus.read_byte(@registers.pc)]
+        puts "#{format('%08d', @m_cycles)}  " \
+             "$#{format('%04X', @registers.pc)}:  " \
+             "#{instruction.mnemonic.ljust(20, ' ')}" \
+             "(#{format('%02X', @bus.read_byte(@registers.pc))} " \
+             "#{format('%02X', @bus.read_byte(@registers.pc + 1))} " \
+             "#{format('%02X', @bus.read_byte(@registers.pc + 2))} " \
+             "#{format('%02X', @bus.read_byte(@registers.pc + 3))} " \
+             "#{format('%02X', @bus.read_byte(@registers.pc + 4))})     " \
+             "F: #{format('%08B', @registers.f)}, " \
+             "A: #{format('%02X', @registers.a)}, " \
+             "B: #{format('%02X', @registers.b)}, " \
+             "C: #{format('%02X', @registers.c)}, " \
+             "D: #{format('%02X', @registers.d)}, " \
+             "E: #{format('%02X', @registers.e)}, " \
+             "H: #{format('%02X', @registers.h)}, " \
+             "L: #{format('%02X', @registers.l)}  " \
       end
 
-      # def print_info
-      #   @test_instruction = Data::OPCODES[@bus.read_byte(@registers.pc)]
-      #   puts "$#{format('%04X', @registers.pc)}:  " \
-      #        "(#{format('%02X', @bus.read_byte(@registers.pc))} " \
-      #        "#{format('%02X', @bus.read_byte(@registers.pc + 1))} " \
-      #        "#{format('%02X', @bus.read_byte(@registers.pc + 2))})  " \
-      #        "A: #{format('%08B', @registers.a)}, " \
-      #        "F: #{format('%08B', @registers.f)}, " \
-      #        "B: #{format('%08B', @registers.b)}, " \
-      #        "C: #{format('%08B', @registers.c)}, " \
-      #        "D: #{format('%08B', @registers.d)}, " \
-      #        "E: #{format('%08B', @registers.e)}, " \
-      #        "H: #{format('%08B', @registers.h)}, " \
-      #        "L: #{format('%08B', @registers.l)},  " \
-      #        "#{@test_instruction[:mnemonic]} " \
-      #        "#{@ticks} of #{@test_instruction[:cycles]}"
+      # def update_ime_flag
+      #   return false if @ime_flag_schedule == :none
+
+      #   @ime_flag = true if @ime_flag_schedule == :enable
+      #   @ime_flag = false if @ime_flag_schedule == :disable
+
+      #   @ime_flag_schedule = :none
       # end
     end
   end
