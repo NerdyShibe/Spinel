@@ -2,101 +2,93 @@
 
 module Spinel
   module Util
-    module Cpu
-      module Instructions
-        # Handles the logic related to all possible ADC instructions
+    module Instructions
+      # Handles the logic related to all possible Add with Carry (ADC) instructions
+      #
+      # ADC A, reg8 => Adds the value of a 8-bit register + carry into A
+      # ADC A, (HL) => Adds the value that HL is pointing to in memory + carry into A
+      # ADC A, imm8 => Adds the value of the next immediate byte + carry into A
+      #
+      class Adc
+        attr_reader :mnemonic, :bytes, :cycles
+
+        # @param operand_type [Symbol] Which type of operand (:reg8, :mem_hl, :imm8)
+        # @param operand [Symbol] Register to operate on, is only used for :reg8 mode
         #
-        class Adc
-          # @param operation [Symbol] Which type of Addition
-          # @param register [Symbol]
-          #
-          def initialize(operation, register = nil)
-            @operation = operation
-            @register = register
+        def initialize(operand_type, operand = nil)
+          @operand_type = operand_type
+          @operand = operand
 
-            super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
-            )
+          @mnemonic = current_mnemonic
+          @bytes = current_bytes
+          @cycles = current_cycles
+        end
+
+        def execute(cpu)
+          case @operand_type
+          when :reg8   then adc_reg8(cpu)
+          when :mem_hl then adc_mem_hl(cpu)
+          when :imm8   then adc_imm8(cpu)
+          else
+            raise ArgumentError, "Invalid ADC operand type: #{@operand_type}."
           end
+        end
 
-          def execute(cpu)
-            case @operation
-            when :adc_a_reg8   then adc_a_reg8(cpu)
-            when :adc_a_mem_hl then adc_a_mem_hl(cpu)
-            when :adc_a_imm8   then adc_a_imm8(cpu)
-            else
-              raise ArgumentError, "Invalid Adc operation: #{@operation}."
-            end
+        private
+
+        def current_mnemonic
+          case @operand_type
+          when :reg8   then "ADC A,#{@operand.to_s.upcase}"
+          when :mem_hl then 'ADC A,(HL)'
+          when :imm8   then 'ADC A,imm8'
           end
+        end
 
-          private
+        def current_bytes
+          @operand_type == :imm8 ? 2 : 1
+        end
 
-          def metadata
-            case @operation
-            when :adc_a_reg8
-              { mnemonic: "ADC A, #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
-            when :adc_a_mem_hl
-              { mnemonic: 'ADC A, [HL]', bytes: 1, cycles: 8 }
-            when :adc_a_imm8
-              { mnemonic: 'ADC A, imm8', bytes: 2, cycles: 8 }
-            end
-          end
+        def current_cycles
+          @operand_type == :reg8 ? 4 : 8
+        end
 
-          # Unifies the logic of adding with carry and setting the flags
-          # for all 3 ADC instructions
-          #
-          def adc_a(cpu, value)
-            accumulator = cpu.registers.a
-            carry_in = cpu.registers.c_flag
-            puts "Adding #{format('%02X', value)} (carry: #{carry_in}) to A: #{format('%02X', accumulator)}"
-            result = accumulator + value + carry_in
+        # Unifies the logic of adding with carry and setting the flags
+        # for all 3 ADC instructions
+        #
+        def adc(cpu, value)
+          accumulator = cpu.registers.a
+          carry_in = cpu.registers.c_flag
+          result = accumulator + value + carry_in
 
-            cpu.registers.z_flag = result.nobits?(0xFF)
-            cpu.registers.n_flag = false
-            cpu.registers.h_flag = ((accumulator & 0x0F) + (value & 0x0F) + carry_in) > 0x0F
-            cpu.registers.c_flag = result > 0xFF
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = ((accumulator & 0x0F) + (value & 0x0F) + carry_in) > 0x0F
+          cpu.registers.c_flag = result > 0xFF
 
-            cpu.registers.a = result
-          end
+          cpu.registers.a = result
+        end
 
-          # Adds the value of a given register and the carry flag into A
-          #
-          def adc_a_reg8(cpu)
-            case cpu.ticks
-            when 4
-              reg8_value = cpu.registers.send(@register)
-              adc_a(cpu, reg8_value)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Adds the value of a given register and the carry flag into A
+        #
+        def adc_reg8(cpu)
+          reg8_value = cpu.registers.send(@operand)
+          adc(cpu, reg8_value)
+        end
 
-          # Fetches the byte value that HL is pointing to in memory
-          # Adds the value and the carry flag into A
-          #
-          def adc_a_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8
-              value_at_mem_hl = cpu.receive_data
-              adc_a(cpu, value_at_mem_hl)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Fetches the byte that HL is pointing to in memory
+        # M-Cycle 2 => Adds the fetched value and the carry flag into A
+        #
+        def adc_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          adc(cpu, value_at_mem_hl)
+        end
 
-          # Fetches the next immediate byte from memory
-          # Adds its value and the carry flag into A
-          #
-          def adc_a_imm8(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.pc)
-            when 8
-              immediate_byte = cpu.receive_data
-              adc_a(cpu, immediate_byte)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Fetches the next immediate byte from memory
+        # M-Cycle 2 => Adds its value and the carry flag into A
+        #
+        def adc_imm8(cpu)
+          immediate_byte = cpu.fetch_next_byte
+          adc(cpu, immediate_byte)
         end
       end
     end

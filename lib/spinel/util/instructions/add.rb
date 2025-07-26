@@ -2,153 +2,128 @@
 
 module Spinel
   module Util
-    module Cpu
-      module Instructions
-        # Handles the logic related to all possible ADD instructions
+    module Instructions
+      # Handles the logic related to all possible Add with Carry (ADD) instructions
+      #
+      # ADD A, reg8 => Adds the value of a 8-bit register into A
+      # ADD A, (HL) => Adds the value that HL is pointing to in memory into A
+      # ADD A, imm8 => Adds the value of the next immediate byte into A
+      #
+      class Add
+        # @param operand_type [Symbol] Which type of operand (:reg8, :mem_hl, :imm8)
+        # @param operand [Symbol] Register to operate on, is only used for :reg8 mode
         #
-        class Add
-          VALID_OPERATIONS = %i[
-            add_a_reg8
-            add_a_mem_hl
-            add_a_imm8
-            add_hl_reg16
-            add_sp_sig8
-          ].freeze
+        def initialize(operand_type, operand = nil)
+          @operand_type = operand_type
+          @operand = operand
 
-          # @param operation [Symbol] Which type of Addition
-          # @param register [Symbol]
-          #
-          def initialize(operation, register = nil)
-            validate(operation)
+          @mnemonic = current_mnemonic
+          @bytes = current_bytes
+          @cycles = current_cycles
+        end
 
-            @operation = operation
-            @register = register
-
-            super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
-            )
+        def execute(cpu)
+          case @operand_type
+          when :reg8     then add_reg8(cpu)
+          when :mem_hl   then add_mem_hl(cpu)
+          when :imm8     then add_imm8(cpu)
+          when :hl_reg16 then add_hl_reg16(cpu)
+          when :sp_sig8  then add_sp_sig8(cpu)
           end
+        end
 
-          def execute(cpu)
-            case @operation
-            when :add_a_reg8   then add_a_reg8(cpu)
-            when :add_a_mem_hl then add_a_mem_hl(cpu)
-            when :add_a_imm8   then add_a_imm8(cpu)
-            when :add_hl_reg16 then add_hl_reg16(cpu)
-            when :add_sp_sig8  then add_sp_sig8(cpu)
-            end
+        private
+
+        def current_mnemonic
+          case @operand_type
+          when :reg8     then "ADD A,#{@operand.to_s.upcase}"
+          when :mem_hl   then 'ADD A,(HL)'
+          when :imm8     then 'ADD A,imm8'
+          when :hl_reg16 then "ADD HL,#{@operand.to_s.upcase}"
+          when :sp_sig8  then 'ADD SP,sig8'
           end
+        end
 
-          private
+        def current_bytes
+          return 2 if %i[sp_sig8 imm8].include?(@operand_type)
 
-          # TODO: Validate register also? Use respond_to? maybe
-          def validate(operation)
-            return if VALID_OPERATIONS.include?(operation)
+          1
+        end
 
-            raise ArgumentError, "Invalid ADD operation: #{operation}. " \
-                                 "Must be one of #{VALID_OPERATIONS.inspect}"
-          end
+        def current_cycles
+          return 4 if @operand_type == :reg8
+          return 16 if @operand_type == :sp_sig8
 
-          def metadata
-            case @operation
-            when :add_a_reg8
-              { mnemonic: "ADD A, #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
-            when :add_a_mem_hl
-              { mnemonic: 'ADD A, [HL]', bytes: 1, cycles: 8 }
-            when :add_a_imm8
-              { mnemonic: 'ADD A, imm8', bytes: 2, cycles: 8 }
-            when :add_hl_reg16
-              { mnemonic: "ADD HL, #{@register.to_s.upcase}", bytes: 1, cycles: 8 }
-            when :add_sp_sig8
-              { mnemonic: 'ADD SP, sig8', bytes: 2, cycles: 16 }
-            end
-          end
+          8
+        end
 
-          def add_a(cpu, value)
-            accumulator = cpu.registers.a
-            puts "Adding #{format('%02X', value)} to A: #{format('%02X', accumulator)}"
-            result = (accumulator + value) & 0xFF
+        def add(cpu, value)
+          accumulator = cpu.registers.a
+          result = accumulator + value
 
-            cpu.registers.z_flag = result.zero?
-            cpu.registers.n_flag = false
-            cpu.registers.h_flag = ((accumulator & 0x0F) + (value & 0x0F)) > 0x0F
-            cpu.registers.c_flag = (accumulator + value) > 0xFF
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = ((accumulator & 0x0F) + (value & 0x0F)) > 0x0F
+          cpu.registers.c_flag = result > 0xFF
 
-            cpu.registers.a = result
-          end
+          cpu.registers.a = result
+        end
 
-          def add_a_reg8(cpu)
-            case cpu.ticks
-            when 4
-              reg8_value = cpu.registers.send(@register)
-              add_a(cpu, reg8_value)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Fetches opcode and performs the addition
+        #
+        def add_reg8(cpu)
+          reg8_value = cpu.registers.send(@operand)
+          add(cpu, reg8_value)
+        end
 
-          def add_a_mem_hl(cpu)
-            case cpu.ticks
-            when 5
-              address = cpu.registers.hl
-              cpu.request_read(address)
-            when 8
-              value_at_mem_hl = cpu.receive_data
-              add_a(cpu, value_at_mem_hl)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Fetches the opcode
+        # M-Cycle 2 => Fetches the byte at (HL) and performs the addition
+        #
+        def add_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          add(cpu, value_at_mem_hl)
+        end
 
-          def add_a_imm8(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read
-            when 8
-              immediate_byte = cpu.receive_data
-              add_a(cpu, immediate_byte)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Fetches the opcode
+        # M-Cycle 2 => Fetches the next immediate byte and performs the addition
+        #
+        def add_imm8(cpu)
+          immediate_byte = cpu.fetch_next_byte
+          add(cpu, immediate_byte)
+        end
 
-          def add_hl_reg16(cpu)
-            case cpu.ticks
-            when 8
-              value = cpu.registers.send(@register)
-              hl_reg = cpu.registers.hl
-              puts "Adding #{format('%04X', value)} to HL: #{format('%04X', hl_reg)}"
-              result = (hl_reg + value) & 0xFFFF
+        # M-Cycle 1 => Fetches the opcode
+        # M-Cycle 2 => Calculates 16-bit addition and set flags
+        #
+        def add_hl_reg16(cpu)
+          reg16_value = cpu.registers.send(@operand)
+          hl_value = cpu.registers.hl
+          result = cpu.calculate_add16(hl_value, reg16_value)
 
-              cpu.registers.n_flag = false
-              cpu.registers.h_flag = ((hl_reg & 0x0FFF) + (value & 0x0FFF)) > 0x0FFF
-              cpu.registers.c_flag = (hl_reg + value) > 0xFFFF
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = ((hl_value & 0x0FFF) + (reg16_value & 0x0FFF)) > 0x0FFF
+          cpu.registers.c_flag = result > 0xFFFF
 
-              cpu.registers.hl = result
-            else wait
-            end
-          end
+          cpu.registers.hl = result
+        end
 
-          # Adds a signed 8-bit value into the Stack Pointer (SP)
-          #
-          def add_sp_sig8(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read
-            when 8 then @unsigned_byte = cpu.receive_data
-            when 12
-              # Sign the 8-bit value
-              # If Bit7 is 1, subtract 256 from the value to get the negative equivalent
-              # If Bit7 is 0, just use the positive number
-              #
-              @signed_byte = @unsigned_byte >= 128 ? @unsigned_byte - 256 : @unsigned_byte
-            when 16
-              cpu.registers.z_flag = false
-              cpu.registers.n_flag = false
-              cpu.registers.h_flag = ((cpu.registers.sp & 0x0F) + (@unsigned_byte & 0x0F)) > 0x0F
-              cpu.registers.c_flag = ((cpu.registers.sp & 0xFF) + @unsigned_byte) > 0xFF
+        # M-Cycle 1 => Fetches the opcode
+        # M-Cycle 2 => Fetches the next immediate byte
+        # M-Cycle 3 => Signs the value (-128 to +127)
+        # M-Cycle 4 => Calculates 16-bit addition and set flags
+        #
+        def add_sp_sig8(cpu)
+          sp_value = cpu.registers.sp
+          unsigned_byte = cpu.fetch_next_byte
+          signed_byte = cpu.sign_value(unsigned_byte)
+          result = cpu.calculate_add16(sp_value, signed_byte)
 
-              cpu.registers.sp += @signed_byte
-            else wait
-            end
-          end
+          cpu.registers.z_flag = false
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = ((sp_value & 0x0F) + (unsigned_byte & 0x0F)) > 0x0F
+          cpu.registers.c_flag = ((sp_value & 0xFF) + unsigned_byte) > 0xFF
+
+          cpu.registers.sp = result
         end
       end
     end
