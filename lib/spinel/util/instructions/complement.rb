@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to all possible Complement instructions
         #
-        class Complement < Base
+        class Complement
           # @param operation [Symbol] Which type of Complement operation
           #
           def initialize(operation)

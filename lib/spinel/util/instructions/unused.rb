@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         #
         # Unused opcodes
-        class Unused < Base
+        class Unused
           def initialize
             super(mnemonic: 'UNUSED', bytes: 1, cycles: 4)
           end

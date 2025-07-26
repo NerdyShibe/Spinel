@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to all possible LD instructions
         #
-        class Load < Base
+        class Load
           # @param operation [Symbol] Which type of Load operation
           # @param target_register [Symbol] Register to load the value, if any
           # @param source_register [Symbol] Register to get the value from, if any
@@ -246,7 +246,7 @@ module Spinel
             case cpu.ticks
             when 5 then cpu.request_read
             when 8 then @lsb = cpu.receive_data
-            when 9 then cpu.request_read # rubocop:disable Lint/DuplicateBranch
+            when 9 then cpu.request_read
             when 12
               msb = cpu.receive_data
               immediate_word = (msb << 8) | @lsb
@@ -287,7 +287,7 @@ module Spinel
             case cpu.ticks
             when 5 then cpu.request_read(cpu.registers.pc)
             when 8 then @lsb = cpu.receive_data
-            when 9 then cpu.request_read(cpu.registers.pc) # rubocop:disable Lint/DuplicateBranch
+            when 9 then cpu.request_read(cpu.registers.pc)
             when 12 then @msb = cpu.receive_data
             when 13
               imm16_address = (@msb << 8) | @lsb
@@ -302,7 +302,7 @@ module Spinel
             case cpu.ticks
             when 5 then cpu.request_read(cpu.registers.pc)
             when 8 then @lsb = cpu.receive_data
-            when 9 then cpu.request_read(cpu.registers.pc) # rubocop:disable Lint/DuplicateBranch
+            when 9 then cpu.request_read(cpu.registers.pc)
             when 12 then @msb = cpu.receive_data
             when 13
               imm16_address = (@msb << 8) | @lsb

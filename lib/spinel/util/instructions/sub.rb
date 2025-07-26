@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to all possible SUB instructions
         #
-        class Sub < Base
+        class Sub
           VALID_OPERATIONS = %i[
             sub_a_reg8
             sub_a_mem_hl

@@ -7,7 +7,7 @@ module Spinel
         # Handles the logic related to all possible
         # Jump and Jump Relative instructions
         #
-        class Jump < Base
+        class Jump
           # @param operation [Symbol] Which type of Jump
           # @param flag [Symbol] Which flag to check for the jump (Z or C)
           # @param value_check [Integer] Value to check in the flag (1 or 0)
@@ -91,27 +91,19 @@ module Spinel
             end
           end
 
-          # Fetches the next 2 immediate bytes from memory
-          # Checks if a given flag is set or not (Z or C)
-          # Assemble a little endian 16-bit address from them
-          # Jumps to the address if the condition is true
+          # M-cycle 1 (04 ticks) => Fetches the opcode
+          # M-cycle 2 (08 ticks) => Fetches the first immediate byte (least significant)
+          # M-cycle 3 (12 ticks) => Fetches the second immediate byte (most significant) and checks jump flag
+          # M-cycle 4 (16 ticks) => If the condition is true or is unconditional (no flag), performs the jump
           #
           def jp_imm16(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.pc)
-            when 8 then @lsb = cpu.receive_data
-            when 9 then cpu.request_read(cpu.registers.pc) # rubocop:disable Lint/DuplicateBranch
-            when 12
-              @msb = cpu.receive_data
-              return if @flag == :none
+            lsb = cpu.bus_read(cpu.registers.pc)
+            msb = cpu.bus_read(cpu.registers.pc)
 
-              self.cycles = 16 if cpu.registers.send(@flag) == @value_check
-            when 16
-              address = (@msb << 8) | @lsb
-              puts "Jumping to $#{format('%04X', address)}..."
-              cpu.registers.pc = address
-            else wait
-            end
+            return if @flag != :none && cpu.registers.send(@flag) != @value_check
+
+            jump_address = (msb << 8) | lsb
+            cpu.update_pc(jump_address)
           end
 
           # Jumps to the value of the HL register pair

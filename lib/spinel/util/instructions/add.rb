@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to all possible ADD instructions
         #
-        class Add < Base
+        class Add
           VALID_OPERATIONS = %i[
             add_a_reg8
             add_a_mem_hl

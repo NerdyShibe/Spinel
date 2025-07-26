@@ -7,7 +7,7 @@ module Spinel
         # Handles the logic related to all possible
         # CALL and RET instructions
         #
-        class Subroutines < Base
+        class Subroutines
           # @param operation [Symbol] Which type of Jump
           # @param flag [Symbol] Which flag to check for the jump (Z or C)
           # @param value_check [Integer] Value to check in the flag (1 or 0)
@@ -89,7 +89,7 @@ module Spinel
             case cpu.ticks
             when 5 then cpu.request_read(cpu.registers.pc)
             when 8 then @lsb = cpu.receive_data
-            when 9 then cpu.request_read(cpu.registers.pc) # rubocop:disable Lint/DuplicateBranch
+            when 9 then cpu.request_read(cpu.registers.pc)
             when 12
               @msb = cpu.receive_data
               return if @flag == :none
@@ -120,7 +120,7 @@ module Spinel
             when 12
               @lsb = cpu.receive_data
               cpu.registers.sp += 1
-            when 13 then cpu.request_read(cpu.registers.sp) # rubocop:disable Lint/DuplicateBranch
+            when 13 then cpu.request_read(cpu.registers.sp)
             when 16
               @msb = cpu.receive_data
               cpu.registers.sp += 1
@@ -138,7 +138,7 @@ module Spinel
             when 8
               @lsb = cpu.receive_data
               cpu.registers.sp += 1
-            when 9 then cpu.request_read(cpu.registers.sp) # rubocop:disable Lint/DuplicateBranch
+            when 9 then cpu.request_read(cpu.registers.sp)
             when 12
               @msb = cpu.receive_data
               cpu.registers.sp += 1

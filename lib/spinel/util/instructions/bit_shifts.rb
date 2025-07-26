@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to all possible Bit Shift instructions
         #
-        class BitShifts < Base
+        class BitShifts
           # @param operation [Symbol] Which type of Bit Shift operation
           # @param operand [Symbol] Either a 8-bit register or :mem_hl => [HL]
           #

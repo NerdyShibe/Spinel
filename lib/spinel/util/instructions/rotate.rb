@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to all possible Rotate instructions
         #
-        class Rotate < Base
+        class Rotate
           # @param operation [Symbol] Which type of Rotate operation
           #
           def initialize(operation)

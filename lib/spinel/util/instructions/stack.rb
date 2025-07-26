@@ -7,7 +7,7 @@ module Spinel
         # Handles the logic related to all possible
         # Stack instructions
         #
-        class Stack < Base
+        class Stack
           # @param operation [Symbol] Which type of Stack
           #
           def initialize(operation, register)
@@ -57,7 +57,7 @@ module Spinel
             when 8
               msb = cpu.registers.send(@register) >> 8
               cpu.confirm_write(msb)
-            when 13 # rubocop:disable Lint/DuplicateBranch
+            when 13
               cpu.registers.sp -= 1
               cpu.request_write(cpu.registers.sp)
             when 16
@@ -76,7 +76,7 @@ module Spinel
             when 8
               @lsb = cpu.receive_data
               cpu.registers.sp += 1
-            when 9 then cpu.request_read(cpu.registers.sp) # rubocop:disable Lint/DuplicateBranch
+            when 9 then cpu.request_read(cpu.registers.sp)
             when 12
               msb = cpu.receive_data
               cpu.registers.sp += 1

@@ -7,7 +7,7 @@ module Spinel
         # Handles the logic related to all possible
         # Interrupt instructions
         #
-        class Interrupt < Base
+        class Interrupt
           # @param operation [Symbol] Which type of Interrupt
           #
           def initialize(operation)

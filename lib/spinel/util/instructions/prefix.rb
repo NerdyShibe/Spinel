@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         #
         # Not Implemented instructions
-        class Prefix < Base
+        class Prefix
           def initialize
             super(mnemonic: 'PREFIX', bytes: 1, cycles: 4)
           end

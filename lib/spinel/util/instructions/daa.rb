@@ -6,7 +6,7 @@ module Spinel
       module Instructions
         # Handles the logic related to the DAA instruction
         #
-        class Daa < Base
+        class Daa
           def initialize
             super(
               mnemonic: metadata[:mnemonic],
