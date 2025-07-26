@@ -107,7 +107,7 @@ RSpec.describe Spinel::Util::Instructions::Jp do
       let(:cpu)       { instance_double(Spinel::Hardware::Cpu, registers: registers) }
 
       before do
-        allow(cpu).to receive(:bus_read).and_return(0x50, 0x01)
+        allow(cpu).to receive(:fetch_next_byte).and_return(0x50, 0x01)
         allow(cpu).to receive(:calculate_address).and_return(0x0150)
       end
 

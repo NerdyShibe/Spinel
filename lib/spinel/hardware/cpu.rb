@@ -51,9 +51,16 @@ module Spinel
         @emu.advance_cycles(4)
       end
 
+      def fetch_next_byte
+        byte = @bus.read_byte(@registers.pc)
+        @registers.pc += 1
+        advance_cycles
+
+        byte
+      end
+
       def bus_read(address)
         byte = @bus.read_byte(address)
-        @registers.pc += 1
         advance_cycles
 
         byte
@@ -78,10 +85,17 @@ module Spinel
         signed_byte
       end
 
+      def calculate_add16(value1, value2)
+        sum = value1 + value2
+        advance_cycles
+
+        sum
+      end
+
       private
 
       def fetch_instruction
-        @opcode = bus_read(@registers.pc)
+        @opcode = fetch_next_byte
       end
 
       def execute

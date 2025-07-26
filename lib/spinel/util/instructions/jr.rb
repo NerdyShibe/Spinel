@@ -52,7 +52,7 @@ module Spinel
         # M-cycle 3 => Converts byte to signed value and adds to PC
         #
         def jr_sig8(cpu)
-          unsigned_byte = cpu.bus_read(cpu.registers.pc)
+          unsigned_byte = cpu.fetch_next_byte
 
           return if @flag && cpu.registers.send(@flag) != @value_check
 

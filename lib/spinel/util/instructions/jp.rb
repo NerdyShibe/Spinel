@@ -60,8 +60,8 @@ module Spinel
         # M-cycle 4 => If condition was met, calculate jump address and updates PC
         #
         def jp_imm16(cpu)
-          lsb = cpu.bus_read(cpu.registers.pc)
-          msb = cpu.bus_read(cpu.registers.pc)
+          lsb = cpu.fetch_next_byte
+          msb = cpu.fetch_next_byte
 
           return if @flag && cpu.registers.send(@flag) != @value_check
 
