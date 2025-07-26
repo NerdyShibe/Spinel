@@ -10,8 +10,19 @@ module Spinel
         @registers = Registers.new
       end
 
-      def step(cycles)
-        cycles.times { tick }
+      def tick
+        old_bit_trigger = @registers.div_bit_trigger
+        @registers.div += 1
+
+        return unless update_tima?(old_bit_trigger)
+
+        @registers.tima += 1
+
+        # Check for TIMA overflow from 0xFF to 0x00
+        return unless @registers.tima.zero?
+
+        @registers.tima = @registers.tma
+        request_interrupt
       end
 
       def read_byte(address)
@@ -71,22 +82,7 @@ module Spinel
       end
 
       def request_interrupt
-        @interrupts.request(:timer)
-      end
-
-      def tick
-        old_bit_trigger = @registers.div_bit_trigger
-        @registers.div += 1
-
-        return unless update_tima?(old_bit_trigger)
-
-        @registers.tima += 1
-
-        # Check for TIMA overflow from 0xFF to 0x00
-        return unless @registers.tima.zero?
-
-        @registers.tima = @registers.tma
-        request_interrupt
+        @interrupts.request(Interrupts::Types::TIMER)
       end
     end
   end
