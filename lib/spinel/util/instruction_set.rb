@@ -36,7 +36,7 @@ module Spinel
         instructions[0x15] = Instructions::Dec.new(:dec_reg8, :d)
         instructions[0x16] = Instructions::Load.new(:ld_reg8_imm8, :d)
         instructions[0x17] = Instructions::Rotate.new(:rla)
-        instructions[0x18] = Instructions::Jump.new(:jr_sig8)
+        instructions[0x18] = Instructions::Jr.new
         instructions[0x19] = Instructions::Add.new(:add_hl_reg16, :de)
         instructions[0x1A] = Instructions::Load.new(:ld_a_mem_reg16, :de)
         instructions[0x1B] = Instructions::Dec.new(:dec_reg16, :de)
@@ -46,7 +46,7 @@ module Spinel
         instructions[0x1F] = Instructions::Rotate.new(:rra)
 
         # Opcodes: 0x20 - 0x2F
-        instructions[0x20] = Instructions::Jump.new(:jr_sig8, :z_flag, 0)
+        instructions[0x20] = Instructions::Jr.new(:z_flag, 0)
         instructions[0x21] = Instructions::Load.new(:ld_reg16_imm16, :hl)
         instructions[0x22] = Instructions::Load.new(:ldi_mem_hl_a)
         instructions[0x23] = Instructions::Inc.new(:inc_reg16, :hl)
@@ -54,7 +54,7 @@ module Spinel
         instructions[0x25] = Instructions::Dec.new(:dec_reg8, :h)
         instructions[0x26] = Instructions::Load.new(:ld_reg8_imm8, :h)
         instructions[0x27] = Instructions::Daa.new
-        instructions[0x28] = Instructions::Jump.new(:jr_sig8, :z_flag, 1)
+        instructions[0x28] = Instructions::Jr.new(:z_flag, 1)
         instructions[0x29] = Instructions::Add.new(:add_hl_reg16, :hl)
         instructions[0x2A] = Instructions::Load.new(:ldi_a_mem_hl)
         instructions[0x2B] = Instructions::Dec.new(:dec_reg16, :hl)
@@ -64,7 +64,7 @@ module Spinel
         instructions[0x2F] = Instructions::Complement.new(:cpl)
 
         # Opcodes: 0x30 - 0x3F
-        instructions[0x30] = Instructions::Jump.new(:jr_sig8, :c_flag, 0)
+        instructions[0x30] = Instructions::Jr.new(:c_flag, 0)
         instructions[0x31] = Instructions::Load.new(:ld_reg16_imm16, :sp)
         instructions[0x32] = Instructions::Load.new(:ldd_mem_hl_a)
         instructions[0x33] = Instructions::Inc.new(:inc_reg16, :sp)
@@ -72,7 +72,7 @@ module Spinel
         instructions[0x35] = Instructions::Dec.new(:dec_mem_hl)
         instructions[0x36] = Instructions::Load.new(:ld_mem_hl_imm8)
         instructions[0x37] = Instructions::Complement.new(:scf)
-        instructions[0x38] = Instructions::Jump.new(:jr_sig8, :c_flag, 1)
+        instructions[0x38] = Instructions::Jr.new(:c_flag, 1)
         instructions[0x39] = Instructions::Add.new(:add_hl_reg16, :sp)
         instructions[0x3A] = Instructions::Load.new(:ldd_a_mem_hl)
         instructions[0x3B] = Instructions::Dec.new(:dec_reg16, :sp)
@@ -228,15 +228,15 @@ module Spinel
         # Opcodes: 0xC0 - 0xCF
         instructions[0xC0] = Instructions::Subroutines.new(:ret_flag, :z_flag, 0)
         instructions[0xC1] = Instructions::Stack.new(:pop_reg16, :bc)
-        instructions[0xC2] = Instructions::Jump.new(:jp_imm16, :z_flag, 0)
-        instructions[0xC3] = Instructions::Jump.new(:jp_imm16)
+        instructions[0xC2] = Instructions::Jp.new(:imm16, :z_flag, 0)
+        instructions[0xC3] = Instructions::Jp.new(:imm16)
         instructions[0xC4] = Instructions::Subroutines.new(:call_imm16, :z_flag, 0)
         instructions[0xC5] = Instructions::Stack.new(:push_reg16, :bc)
         instructions[0xC6] = Instructions::Add.new(:add_a_imm8)
         instructions[0xC7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0000)
         instructions[0xC8] = Instructions::Subroutines.new(:ret_flag, :z_flag, 1)
         instructions[0xC9] = Instructions::Subroutines.new(:ret)
-        instructions[0xCA] = Instructions::Jump.new(:jp_imm16, :z_flag, 1)
+        instructions[0xCA] = Instructions::Jp.new(:imm16, :z_flag, 1)
         instructions[0xCB] = Instructions::Prefix.new
         instructions[0xCC] = Instructions::Subroutines.new(:call_imm16, :z_flag, 1)
         instructions[0xCD] = Instructions::Subroutines.new(:call_imm16)
@@ -246,7 +246,7 @@ module Spinel
         # Opcodes: 0xD0 - 0xDF
         instructions[0xD0] = Instructions::Subroutines.new(:ret_flag, :c_flag, 0)
         instructions[0xD1] = Instructions::Stack.new(:pop_reg16, :de)
-        instructions[0xD2] = Instructions::Jump.new(:jp_imm16, :c_flag, 0)
+        instructions[0xD2] = Instructions::Jp.new(:imm16, :c_flag, 0)
         instructions[0xD3] = Instructions::Unused.new
         instructions[0xD4] = Instructions::Subroutines.new(:call_imm16, :c_flag, 0)
         instructions[0xD5] = Instructions::Stack.new(:push_reg16, :de)
@@ -254,7 +254,7 @@ module Spinel
         instructions[0xD7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0010)
         instructions[0xD8] = Instructions::Subroutines.new(:ret_flag, :c_flag, 1)
         instructions[0xD9] = Instructions::Subroutines.new(:reti)
-        instructions[0xDA] = Instructions::Jump.new(:jp_imm16, :c_flag, 1)
+        instructions[0xDA] = Instructions::Jp.new(:imm16, :c_flag, 1)
         instructions[0xDB] = Instructions::Unused.new
         instructions[0xDC] = Instructions::Subroutines.new(:call_imm16, :c_flag, 1)
         instructions[0xDD] = Instructions::Unused.new
@@ -271,7 +271,7 @@ module Spinel
         instructions[0xE6] = Instructions::And.new(:and_a_imm8)
         instructions[0xE7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0020)
         instructions[0xE8] = Instructions::Add.new(:add_sp_sig8)
-        instructions[0xE9] = Instructions::Jump.new(:jp_hl)
+        instructions[0xE9] = Instructions::Jp.new(:mem_hl)
         instructions[0xEA] = Instructions::Load.new(:ld_mem_imm16_a)
         instructions[0xEB] = Instructions::Unused.new
         instructions[0xEC] = Instructions::Unused.new
