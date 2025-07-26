@@ -3,41 +3,41 @@
 module Spinel
   # This class will describe the Game Boy Emulator
   class Emulator
-    STATUSES = %w[paused running].freeze
-
-    def initialize(rom_file, status = 'paused')
-      @status = status
-
-      @rom = Cartridge::Rom.new(rom_file)
-      @vram = Hardware::Vram.new
-      @wram = Hardware::Wram.new
-      @bus = Hardware::Bus.new(@rom, @vram, @wram)
-      @cpu = Hardware::SoC::Cpu.new(@bus)
-
-      boot
-    end
-
     attr_accessor :status
 
-    def paused?
-      status == 'paused'
+    def initialize(rom_file)
+      rom = Cartridge::Rom.new(rom_file)
+      vram = Hardware::Vram.new
+      wram = Hardware::Wram.new
+      hram = Hardware::Cpu::Hram.new
+      interrupts = Hardware::Interrupts.new
+      serial = Hardware::Serial.new(interrupts)
+      ppu = Hardware::Ppu.new
+
+      @timer = Hardware::Timer.new(interrupts)
+      bus = Hardware::Bus.new(rom, ppu, vram, wram, hram, interrupts, serial, @timer)
+      @cpu = Hardware::Cpu.new(self, bus, interrupts)
+
+      @status = :running
+
+      run
     end
 
-    def running?
-      status == 'running'
+    def advance_cycles(cycles)
+      cycles.times do
+        @timer.tick
+      end
     end
 
     private
 
-    def boot
-      @status = 'running'
+    # TODO: Implement boot loader
+    def boot; end
 
-      # Main core loop
-      while running?
-        @cpu.tick
-        # @ppu.tick
-        # @apu.tick
-        # @timer.tick
+    def run
+      5.times do
+        @cpu.run
+        # @cpu.run while @status == :running
       end
     end
   end
