@@ -36,7 +36,7 @@ module Spinel
         instructions[0x15] = Instructions::Dec.new(:dec_reg8, :d)
         instructions[0x16] = Instructions::Load.new(:ld_reg8_imm8, :d)
         instructions[0x17] = Instructions::Rotate.new(:rla)
-        instructions[0x18] = Instructions::Jr.new
+        instructions[0x18] = Instructions::Jr.new(:sig8)
         instructions[0x19] = Instructions::Add.new(:add_hl_reg16, :de)
         instructions[0x1A] = Instructions::Load.new(:ld_a_mem_reg16, :de)
         instructions[0x1B] = Instructions::Dec.new(:dec_reg16, :de)
@@ -46,7 +46,7 @@ module Spinel
         instructions[0x1F] = Instructions::Rotate.new(:rra)
 
         # Opcodes: 0x20 - 0x2F
-        instructions[0x20] = Instructions::Jr.new(:z_flag, 0)
+        instructions[0x20] = Instructions::Jr.new(:sig8, :z_flag, 0)
         instructions[0x21] = Instructions::Load.new(:ld_reg16_imm16, :hl)
         instructions[0x22] = Instructions::Load.new(:ldi_mem_hl_a)
         instructions[0x23] = Instructions::Inc.new(:inc_reg16, :hl)
@@ -54,7 +54,7 @@ module Spinel
         instructions[0x25] = Instructions::Dec.new(:dec_reg8, :h)
         instructions[0x26] = Instructions::Load.new(:ld_reg8_imm8, :h)
         instructions[0x27] = Instructions::Daa.new
-        instructions[0x28] = Instructions::Jr.new(:z_flag, 1)
+        instructions[0x28] = Instructions::Jr.new(:sig8, :z_flag, 1)
         instructions[0x29] = Instructions::Add.new(:add_hl_reg16, :hl)
         instructions[0x2A] = Instructions::Load.new(:ldi_a_mem_hl)
         instructions[0x2B] = Instructions::Dec.new(:dec_reg16, :hl)
@@ -64,7 +64,7 @@ module Spinel
         instructions[0x2F] = Instructions::Complement.new(:cpl)
 
         # Opcodes: 0x30 - 0x3F
-        instructions[0x30] = Instructions::Jr.new(:c_flag, 0)
+        instructions[0x30] = Instructions::Jr.new(:sig8, :c_flag, 0)
         instructions[0x31] = Instructions::Load.new(:ld_reg16_imm16, :sp)
         instructions[0x32] = Instructions::Load.new(:ldd_mem_hl_a)
         instructions[0x33] = Instructions::Inc.new(:inc_reg16, :sp)
@@ -72,7 +72,7 @@ module Spinel
         instructions[0x35] = Instructions::Dec.new(:dec_mem_hl)
         instructions[0x36] = Instructions::Load.new(:ld_mem_hl_imm8)
         instructions[0x37] = Instructions::Complement.new(:scf)
-        instructions[0x38] = Instructions::Jr.new(:c_flag, 1)
+        instructions[0x38] = Instructions::Jr.new(:sig8, :c_flag, 1)
         instructions[0x39] = Instructions::Add.new(:add_hl_reg16, :sp)
         instructions[0x3A] = Instructions::Load.new(:ldd_a_mem_hl)
         instructions[0x3B] = Instructions::Dec.new(:dec_reg16, :sp)

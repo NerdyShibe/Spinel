@@ -29,11 +29,10 @@ require_relative 'spinel/hardware/timer/registers'
 require_relative 'spinel/hardware/vram'
 require_relative 'spinel/hardware/wram'
 
-require_relative 'spinel/util/cpu/instruction_set'
+require_relative 'spinel/util/instruction_set'
 require_relative 'spinel/util/constants'
 
-require_relative 'spinel/util/cpu/instructions/base'
-base_path = File.join(__dir__, 'spinel/util/cpu/instructions/*.rb')
+base_path = File.join(__dir__, 'spinel/util/instructions/*.rb')
 
 Dir.glob(base_path).each do |file|
   require file

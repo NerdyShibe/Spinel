@@ -3,7 +3,7 @@
 RSpec.describe Spinel::Util::Instructions::Jr do
   describe '#initialize' do
     context 'when creating JR sig8' do
-      subject(:instruction) { described_class.new }
+      subject(:instruction) { described_class.new(:sig8) }
 
       it 'sets the correct mnemonic' do
         expect(instruction.mnemonic).to eq('JR sig8')
@@ -19,7 +19,7 @@ RSpec.describe Spinel::Util::Instructions::Jr do
     end
 
     context 'when creating JR NZ,sig8' do
-      subject(:instruction) { described_class.new(:z_flag, 0) }
+      subject(:instruction) { described_class.new(:sig8, :z_flag, 0) }
 
       it 'sets the correct mnemonic' do
         expect(instruction.mnemonic).to eq('JR NZ,sig8')
@@ -35,7 +35,7 @@ RSpec.describe Spinel::Util::Instructions::Jr do
     end
 
     context 'when creating JR NC,sig8' do
-      subject(:instruction) { described_class.new(:c_flag, 0) }
+      subject(:instruction) { described_class.new(:sig8, :c_flag, 0) }
 
       it 'sets the correct mnemonic' do
         expect(instruction.mnemonic).to eq('JR NC,sig8')
@@ -51,7 +51,7 @@ RSpec.describe Spinel::Util::Instructions::Jr do
     end
 
     context 'when creating JR Z,sig8' do
-      subject(:instruction) { described_class.new(:z_flag, 1) }
+      subject(:instruction) { described_class.new(:sig8, :z_flag, 1) }
 
       it 'sets the correct mnemonic' do
         expect(instruction.mnemonic).to eq('JR Z,sig8')
@@ -67,7 +67,7 @@ RSpec.describe Spinel::Util::Instructions::Jr do
     end
 
     context 'when creating JR C,sig8' do
-      subject(:instruction) { described_class.new(:c_flag, 1) }
+      subject(:instruction) { described_class.new(:sig8, :c_flag, 1) }
 
       it 'sets the correct mnemonic' do
         expect(instruction.mnemonic).to eq('JR C,sig8')

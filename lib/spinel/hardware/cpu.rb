@@ -11,8 +11,8 @@ module Spinel
     # input to controlling graphics and sound hardware.
     #
     class Cpu
-      attr_accessor :ime_flag_schedule
-      attr_reader :registers, :ticks, :opcode, :instruction
+      attr_accessor :ime_flag_schedule, :m_cycles
+      attr_reader :registers, :opcode, :instruction
 
       def initialize(emu, bus, interrupts)
         @emu = emu
@@ -64,9 +64,18 @@ module Spinel
         advance_cycles
       end
 
-      def update_pc(address)
+      def calculate_address(lsb, msb)
+        address = (msb << 8) | lsb
         advance_cycles
-        @registers.pc = address
+
+        address
+      end
+
+      def sign_value(unsigned_byte)
+        signed_byte = unsigned_byte >= 128 ? (unsigned_byte - 256) : unsigned_byte
+        advance_cycles
+
+        signed_byte
       end
 
       private

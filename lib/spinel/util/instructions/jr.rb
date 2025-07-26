@@ -11,10 +11,12 @@ module Spinel
       class Jr
         attr_reader :mnemonic, :bytes, :t_cycles
 
+        # @param address_mode [Symbol] Addressing mode (:sig8)
         # @param flag [Symbol] Which flag to check for the jump (C or Z)
         # @param value_check [Integer] Value to check in the flag (1 or 0)
         #
-        def initialize(flag = nil, value_check = nil)
+        def initialize(address_mode, flag = nil, value_check = nil)
+          @address_mode = address_mode
           @flag = flag
           @value_check = value_check
 
@@ -35,9 +37,9 @@ module Spinel
         end
 
         def current_mnemonic
-          return 'JR sig8' if @flag.nil?
+          return "JR #{@address_mode}" if @flag.nil?
 
-          "JR #{[condition, 'sig8'].join(',')}"
+          "JR #{[condition, @address_mode].join(',')}"
         end
 
         def current_t_cycles
