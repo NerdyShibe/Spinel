@@ -15,8 +15,8 @@ module Spinel
         # @param operand_type [Symbol] Which type of operand (:reg8, :mem_hl, :imm8)
         # @param operand [Symbol] Register to operate on, is only used for :reg8 mode
         #
-        def initialize(operation_type, operand = nil)
-          @operation_type = operation_type
+        def initialize(operand_type, operand = nil)
+          @operand_type = operand_type
           @operand = operand
 
           @mnemonic = current_mnemonic
@@ -25,12 +25,12 @@ module Spinel
         end
 
         def execute(cpu)
-          case @operation_type
+          case @operand_type
           when :reg8   then and_a_reg8(cpu)
           when :mem_hl then and_a_mem_hl(cpu)
           when :imm8   then and_a_imm8(cpu)
           else
-            raise ArgumentError, "Invalid AND operation type: #{@operation_type}"
+            raise ArgumentError, "Invalid AND operation type: #{@operand_type}"
           end
         end
 

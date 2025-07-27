@@ -39,6 +39,8 @@ module Spinel
         private
 
         def call_mnemonic
+          return 'CALL imm16' if @flag == :none
+
           case @flag
           when :z_flag
             @value_check == 1 ? 'CALL Z, imm16' : 'CALL NZ, imm16'
