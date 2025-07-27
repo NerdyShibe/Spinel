@@ -12,7 +12,9 @@ module Spinel
         @oam = Oam.new(self)
       end
 
-      def tick; end
+      def tick
+        @registers.ly += 1
+      end
 
       def read_oam(address)
         @oam.read_byte(address)

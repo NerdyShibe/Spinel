@@ -16,8 +16,8 @@ module Spinel
       # $FF4A - $FF4B => WY, WX: Window Y position, X position plus 7
       #
       class Registers
-        attr_accessor :lcdc, :scy, :scx, :ly, :lyc, :bgp, :obp0, :obp1, :wy, :wx
-        attr_reader :stat
+        attr_accessor :lcdc, :scy, :scx, :lyc, :bgp, :obp0, :obp1, :wy, :wx
+        attr_reader :stat, :ly
 
         def initialize
           @lcdc = 0x91
@@ -39,6 +39,10 @@ module Spinel
         #
         def stat=(value)
           @stat = (value & 0b01111000) | (@stat & 0b10000111)
+        end
+
+        def ly=(value)
+          @ly = value & 0x99
         end
       end
     end

@@ -24,8 +24,6 @@ module Spinel
     # ===============================================================================================
     #
     class Bus
-      attr_accessor :locked
-
       def initialize(cartridge, ppu, vram, wram, hram, interrupts, serial, timer) # rubocop:disable Metrics/ParameterLists
         @cartridge = cartridge
         @ppu = ppu
@@ -35,10 +33,6 @@ module Spinel
         @interrupts = interrupts
         @serial = serial
         @timer = timer
-
-        @locked = false
-        @data_latch = 0x00
-        @address_latch = 0x0000
       end
 
       # Delegates which component should be involved
@@ -62,8 +56,8 @@ module Spinel
           case address
           when 0xFF01..0xFF02 then @serial.read_byte(address)
           when 0xFF04..0xFF07 then @timer.read_byte(address)
+          when 0xFF0F then @interrupts.read_byte(address)
           when 0xFF40..0xFF4B then @ppu.read_registers(address)
-          else raise "This address was not mapped yet: $#{format('%04X', address)}"
           end
         when 0xFF80..0xFFFE then @hram.read_byte(address)
         when 0xFFFF then @interrupts.read_byte(address)
@@ -93,30 +87,14 @@ module Spinel
           case address
           when 0xFF01..0xFF02 then @serial.write_byte(address, value)
           when 0xFF04..0xFF07 then @timer.write_byte(address, value)
+          when 0xFF0F then @interrupts.write_byte(address, value)
           when 0xFF40..0xFF4B then @ppu.write_byte(address, value)
-          else raise "This address was not mapped yet: $#{format('%04X', address)}"
           end
         when 0xFF80..0xFFFE then @hram.write_byte(address, value)
         when 0xFFFF then @interrupts.write_byte(address, value)
         else
           raise MemoryOutOfBoundsError, "This address is out of bounds: $#{format('%04X', address)}"
         end
-      end
-
-      def request_read(address)
-        @address_latch = address
-      end
-
-      def return_data
-        read_byte(@address_latch)
-      end
-
-      def request_write(address)
-        @address_latch = address
-      end
-
-      def confirm_write(value)
-        write_byte(@address_latch, value)
       end
     end
   end

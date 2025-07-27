@@ -7,19 +7,11 @@ module Spinel
       # $FF0F => Interrupt Flag Register
       # $FFFF => Interrupt Enable Register
       class Registers
-        attr_reader :ie, :if
+        attr_accessor :if, :ie
 
         def initialize
           @ie = 0x00
           @if = 0x00
-        end
-
-        def ie=(value)
-          @if = value | 0b11100000
-        end
-
-        def if=(value)
-          @if = value | 0b11100000
         end
       end
     end
