@@ -11,7 +11,7 @@ module Spinel
 
         def initialize
           @ie = 0x00
-          @if = 0xE0
+          @if = 0x00
         end
 
         def ie=(value)

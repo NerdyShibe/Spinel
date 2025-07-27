@@ -18,10 +18,10 @@ module Spinel
         DIV_BIT_SELECTOR = [9, 3, 5, 7].freeze # For 1024, 16, 64, 256 cycles
 
         def initialize
-          @div = 0x0000
+          @div = 0xABCC
           @tima = 0x00
           @tma = 0x00
-          @tac = 0xF8
+          @tac = 0x00
         end
 
         def div_bit_trigger
