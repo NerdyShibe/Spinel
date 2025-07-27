@@ -148,13 +148,6 @@ module Spinel
           set_bit(4, value)
         end
 
-        def update_flags(z:, n:, h:, c:) # rubocop:disable Naming/MethodParameterName
-          self.z_flag = z unless z.nil?
-          self.n_flag = n unless n.nil?
-          self.h_flag = h unless h.nil?
-          self.c_flag = c unless c.nil?
-        end
-
         private
 
         def set_bit(position, value)
