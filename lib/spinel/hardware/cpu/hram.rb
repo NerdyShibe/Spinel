@@ -9,11 +9,11 @@ module Spinel
       # It is used for faster instructions like the LDH
       #
       # Can be read or written to
-      # Has 127 bytes reserved to it between $FF80 and $FFFE
+      # Has 128 bytes reserved to it between $FF80 and $FFFE
       #
       class Hram
         def initialize
-          @bytes = Array.new(127, 0x00)
+          @bytes = Array.new(128, 0x00)
           @start_offset = 0xFF80
         end
 

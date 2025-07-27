@@ -10,7 +10,7 @@ module Spinel
     #
     class Wram
       def initialize
-        @bytes = Array.new(8191, 0x00) # 8 KiB
+        @bytes = Array.new(8192, 0x00) # 8 KiB
         @start_offset = 0xC000
       end
 
