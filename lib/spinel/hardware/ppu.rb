@@ -4,6 +4,8 @@ module Spinel
   module Hardware
     # Pixel Processing Unit
     class Ppu
+      attr_reader :mode
+
       def initialize
         @mode = Modes::OAM_SCAN
         @registers = Registers.new
