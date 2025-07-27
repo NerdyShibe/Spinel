@@ -15,11 +15,9 @@ module Spinel
           @target_register = target_register
           @source_register = source_register
 
-          super(
-            mnemonic: metadata[:mnemonic],
-            bytes: metadata[:bytes],
-            cycles: metadata[:cycles]
-          )
+          @mnemonic = metadata[:mnemonic]
+          @bytes = metadata[:bytes]
+          @cycles = metadata[:cycles]
         end
 
         def execute(cpu)

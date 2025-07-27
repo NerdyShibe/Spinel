@@ -2,369 +2,345 @@
 
 module Spinel
   module Util
-    module Cpu
-      module Instructions
-        # Handles the logic related to all possible Bit Shift instructions
+    module Instructions
+      # Handles the logic related to all possible Bit Shift instructions
+      #
+      class BitShifts
+        # @param operation [Symbol] Which type of Bit Shift operation
+        # @param operand [Symbol] Either a 8-bit register or :mem_hl => [HL]
         #
-        class BitShifts
-          # @param operation [Symbol] Which type of Bit Shift operation
-          # @param operand [Symbol] Either a 8-bit register or :mem_hl => [HL]
-          #
-          def initialize(operation, operand)
-            @operation = operation
-            @operand = operand
+        def initialize(operation, operand)
+          @operation = operation
+          @operand = operand
 
-            super(
-              mnemonic: current_mnemonic,
-              bytes: current_bytes,
-              cycles: current_cycles
-            )
+          @mnemonic = current_mnemonic
+          @bytes = current_bytes
+          @cycles = current_cycles
+        end
+
+        def execute(cpu)
+          case @operation
+          when :rlc  then rlc(cpu)
+          when :rrc  then rrc(cpu)
+          when :rl   then rl(cpu)
+          when :rr   then rr(cpu)
+          when :sla  then sla(cpu)
+          when :sra  then sra(cpu)
+          when :swap then swap(cpu)
+          when :srl  then srl(cpu)
+          else raise ArgumentError, "Invalid Bit Shift operation: #{@operation}."
           end
+        end
 
-          def execute(cpu)
-            case @operation
-            when :rlc  then rlc(cpu)
-            when :rrc  then rrc(cpu)
-            when :rl   then rl(cpu)
-            when :rr   then rr(cpu)
-            when :sla  then sla(cpu)
-            when :sra  then sra(cpu)
-            when :swap then swap(cpu)
-            when :srl  then srl(cpu)
-            else raise ArgumentError, "Invalid Bit Shift operation: #{@operation}."
-            end
-          end
+        private
 
-          private
+        def current_mnemonic
+          operand = @operand == :mem_hl ? '[HL]' : @operand
+          [@operation, operand].join(' ').upcase
+        end
 
-          def current_mnemonic
-            operand = @operand == :mem_hl ? '[HL]' : @operand
-            [@operation, operand].join(' ').upcase
-          end
+        def current_bytes
+          2
+        end
 
-          def current_bytes
-            2
-          end
+        def current_cycles
+          @operand == :mem_hl ? 16 : 8
+        end
 
-          def current_cycles
-            @operand == :mem_hl ? 16 : 8
-          end
+        def update_flags(cpu, result, bit_shifted)
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = false
+          cpu.registers.c_flag = (bit_shifted == 1)
+        end
 
-          def update_flags(cpu, result, bit_shifted)
-            cpu.registers.z_flag = result.nobits?(0xFF)
-            cpu.registers.n_flag = false
-            cpu.registers.h_flag = false
-            cpu.registers.c_flag = (bit_shifted == 1)
-          end
+        # Rotate Left Circular
+        #
+        def rlc(cpu)
+          @operand == :mem_hl ? rlc_mem_hl(cpu) : rlc_reg8(cpu)
+        end
 
-          # Rotate Left Circular
-          #
-          def rlc(cpu)
-            @operand == :mem_hl ? rlc_mem_hl(cpu) : rlc_reg8(cpu)
-          end
+        # Rotate Left Circular
+        #
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def rlc_reg8(cpu)
+          register = cpu.registers.send(@register)
+          bit7 = (register >> 7) & 1
 
-          def rlc_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              bit7 = (register >> 7) & 1
+          result = (register << 1) | bit7
 
-              result = (register << 1) | bit7
+          update_flags(cpu, result, bit7)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              update_flags(cpu, result, bit7)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def rlc_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          bit7 = (value_at_mem_hl >> 7) & 1
 
-          def rlc_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              bit7 = (@fetched_byte >> 7) & 1
+          rotated_value = (value_at_mem_hl << 1) | bit7
 
-              @rotated_value = (@fetched_byte << 1) | bit7
+          update_flags(cpu, rotated_value, bit7)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
+        end
 
-              update_flags(cpu, @rotated_value, bit7)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+        # Rotate Right Circular
+        #
+        def rrc(cpu)
+          @operand == :mem_hl ? rrc_mem_hl(cpu) : rrc_reg8(cpu)
+        end
 
-          # Rotate Right Circular
-          #
-          def rrc(cpu)
-            @operand == :mem_hl ? rrc_mem_hl(cpu) : rrc_reg8(cpu)
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def rrc_reg8(cpu)
+          register = cpu.registers.send(@register)
+          bit0 = register & 1
 
-          def rrc_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              bit0 = register & 1
+          result = (bit0 << 7) | (register >> 1)
 
-              result = (bit0 << 7) | (register >> 1)
+          update_flags(cpu, result, bit0)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              update_flags(cpu, result, bit0)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def rrc_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          bit0 = value_at_mem_hl & 1
 
-          def rrc_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              bit0 = @fetched_byte & 1
+          rotated_value = (bit0 << 7) | (value_at_mem_hl >> 1)
 
-              @rotated_value = (bit0 << 7) | (@fetched_byte >> 1)
+          update_flags(cpu, rotated_value, bit0)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
+        end
 
-              update_flags(cpu, @rotated_value, bit0)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+        # Rotate Left (Carry)
+        #
+        def rl(cpu)
+          @operand == :mem_hl ? rl_mem_hl(cpu) : rl_reg8(cpu)
+        end
 
-          # Rotate Left (Carry)
-          #
-          def rl(cpu)
-            @operand == :mem_hl ? rl_mem_hl(cpu) : rl_reg8(cpu)
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def rl_reg8(cpu)
+          register = cpu.registers.send(@register)
+          carry_in = cpu.registers.c_flag
+          new_carry = (register >> 7) & 1
 
-          def rl_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              carry_in = cpu.registers.c_flag
-              new_carry = (register >> 7) & 1
+          result = (register << 1) | carry_in
 
-              result = (register << 1) | carry_in
+          update_flags(cpu, result, new_carry)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              update_flags(cpu, result, new_carry)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def rl_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          carry_in = cpu.registers.c_flag
+          new_carry = (value_at_mem_hl >> 7) & 1
 
-          def rl_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              carry_in = cpu.registers.c_flag
-              new_carry = (@fetched_byte >> 7) & 1
+          rotated_value = (value_at_mem_hl << 1) | carry_in
 
-              @rotated_value = (@fetched_byte << 1) | carry_in
+          update_flags(cpu, rotated_value, new_carry)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
+        end
 
-              update_flags(cpu, @rotated_value, new_carry)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+        # Rotate Right (Carry)
+        #
+        def rr(cpu)
+          @operand == :mem_hl ? rr_mem_hl(cpu) : rr_reg8(cpu)
+        end
 
-          # Rotate Right (Carry)
-          #
-          def rr(cpu)
-            @operand == :mem_hl ? rr_mem_hl(cpu) : rr_reg8(cpu)
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def rr_reg8(cpu)
+          register = cpu.registers.send(@register)
+          carry_in = cpu.registers.c_flag
+          new_carry = register & 1
 
-          def rr_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              carry_in = cpu.registers.c_flag
-              new_carry = register & 1
+          result = (carry_in << 7) | (register >> 1)
 
-              result = (carry_in << 7) | (register >> 1)
+          update_flags(cpu, result, new_carry)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              update_flags(cpu, result, new_carry)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def rr_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          carry_in = cpu.registers.c_flag
+          new_carry = value_at_mem_hl & 1
 
-          def rr_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              carry_in = cpu.registers.c_flag
-              new_carry = @fetched_byte & 1
+          rotated_value = (carry_in << 7) | (value_at_mem_hl >> 1)
 
-              @rotated_value = (carry_in << 7) | (@fetched_byte >> 1)
+          update_flags(cpu, rotated_value, new_carry)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
+        end
 
-              update_flags(cpu, @rotated_value, new_carry)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+        # Shift Left Arithmetic
+        #
+        def sla(cpu)
+          @operand == :mem_hl ? sla_mem_hl(cpu) : sla_reg8(cpu)
+        end
 
-          # Shift Left Arithmetic
-          #
-          def sla(cpu)
-            @operand == :mem_hl ? sla_mem_hl(cpu) : sla_reg8(cpu)
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def sla_reg8(cpu)
+          register = cpu.registers.send(@register)
+          bit7 = (register >> 7) & 1
 
-          def sla_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              bit7 = (register >> 7) & 1
+          result = (register << 1) | 0
 
-              result = (register << 1) | 0
+          update_flags(cpu, result, bit7)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              update_flags(cpu, result, bit7)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def sla_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          bit7 = (value_at_mem_hl >> 7) & 1
 
-          def sla_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              bit7 = (@fetched_byte >> 7) & 1
+          rotated_value = (value_at_mem_hl << 1) | 0
 
-              @rotated_value = (@fetched_byte << 1) | 0
+          update_flags(cpu, rotated_value, bit7)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
+        end
 
-              update_flags(cpu, @rotated_value, bit7)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+        # Shift Right Arithmetic
+        #
+        def sra(cpu)
+          @operand == :mem_hl ? sra_mem_hl(cpu) : sra_reg8(cpu)
+        end
 
-          # Shift Right Arithmetic
-          #
-          def sra(cpu)
-            @operand == :mem_hl ? sra_mem_hl(cpu) : sra_reg8(cpu)
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def sra_reg8(cpu)
+          reg8_value = cpu.registers.send(@register)
+          bit7 = (reg8_value >> 7) & 1
+          bit0 = reg8_value & 1
 
-          def sra_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              bit7 = (register >> 7) & 1
-              bit0 = register & 1
+          result = (bit7 << 7) | (reg8_value >> 1)
 
-              result = (bit7 << 7) | (register >> 1)
+          update_flags(cpu, result, bit0)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              update_flags(cpu, result, bit0)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def sra_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          bit7 = (value_at_mem_hl >> 7) & 1
+          bit0 = value_at_mem_hl & 1
 
-          def sra_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              bit7 = (@fetched_byte >> 7) & 1
-              bit0 = @fetched_byte & 1
+          rotated_value = (bit7 << 7) | (value_at_mem_hl >> 1)
 
-              @rotated_value = (bit7 << 7) | (@fetched_byte >> 1)
+          update_flags(cpu, rotated_value, bit0)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
+        end
 
-              update_flags(cpu, @rotated_value, bit0)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+        # Swaps the Lower4 and Upper4 nibbles
+        #
+        def swap(cpu)
+          @operand == :mem_hl ? swap_mem_hl(cpu) : swap_reg8(cpu)
+        end
 
-          # Swaps the Lower4 and Upper4 nibbles
-          #
-          def swap(cpu)
-            @operand == :mem_hl ? swap_mem_hl(cpu) : swap_reg8(cpu)
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def swap_reg8(cpu)
+          register = cpu.registers.send(@register)
+          lower4 = register & 0x0F
+          upper4 = register >> 4
 
-          def swap_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              lower4 = register & 0x0F
-              upper4 = register >> 4
+          result = (lower4 << 4) | upper4
+          cpu.registers.send("#{@register}=", result)
 
-              result = (lower4 << 4) | upper4
-              cpu.registers.send("#{@register}=", result)
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = false
+          cpu.registers.c_flag = false
+        end
 
-              cpu.registers.z_flag = result.nobits?(0xFF)
-              cpu.registers.n_flag = false
-              cpu.registers.h_flag = false
-              cpu.registers.c_flag = false
-            else wait
-            end
-          end
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def swap_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          lower4 = value_at_mem_hl & 0x0F
+          upper4 = value_at_mem_hl >> 4
 
-          def swap_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              lower4 = @fetched_byte & 0x0F
-              upper4 = @fetched_byte >> 4
+          result = (lower4 << 4) | upper4
 
-              @result = (lower4 << 4) | upper4
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@result)
-              cpu.registers.z_flag = @result.nobits?(0xFF)
-              cpu.registers.n_flag = false
-              cpu.registers.h_flag = false
-              cpu.registers.c_flag = false
-            else wait
-            end
-          end
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = false
+          cpu.registers.c_flag = false
 
-          # Shift Right Logic
-          #
-          def srl(cpu)
-            @operand == :mem_hl ? srl_mem_hl(cpu) : srl_reg8(cpu)
-          end
+          cpu.bus_write(cpu.registers.hl, result)
+        end
 
-          def srl_reg8(cpu)
-            case cpu.ticks
-            when 8
-              register = cpu.registers.send(@register)
-              bit0 = register & 1
+        # Shift Right Logic
+        #
+        def srl(cpu)
+          @operand == :mem_hl ? srl_mem_hl(cpu) : srl_reg8(cpu)
+        end
 
-              result = 0 | (register >> 1)
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode and executes instruction
+        #
+        def srl_reg8(cpu)
+          register = cpu.registers.send(@register)
+          bit0 = register & 1
 
-              update_flags(cpu, result, bit0)
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+          result = 0 | (register >> 1)
 
-          def srl_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @fetched_byte = cpu.receive_data
-            when 12
-              bit0 = @fetched_byte & 1
+          update_flags(cpu, result, bit0)
+          cpu.registers.send("#{@register}=", result)
+        end
 
-              @rotated_value = 0 | (@fetched_byte >> 1)
+        # M-cycle 1 => Fetches 0xCB prefix opcode
+        # M-cycle 2 => Fetches current opcode
+        # M-cycle 3 => Read value from HL in memory and perform rotate
+        # M-cycle 4 => Writes the value back at (HL)
+        #
+        def srl_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          bit0 = value_at_mem_hl & 1
 
-              update_flags(cpu, @rotated_value, bit0)
-            when 13 then cpu.request_write(cpu.registers.hl)
-            when 16
-              cpu.confirm_write(@rotated_value)
-            else wait
-            end
-          end
+          rotated_value = 0 | (value_at_mem_hl >> 1)
+
+          update_flags(cpu, rotated_value, bit0)
+          cpu.bus_write(cpu.registers.hl, rotated_value)
         end
       end
     end

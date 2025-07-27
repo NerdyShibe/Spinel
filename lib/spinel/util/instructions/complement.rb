@@ -2,83 +2,70 @@
 
 module Spinel
   module Util
-    module Cpu
-      module Instructions
-        # Handles the logic related to all possible Complement instructions
+    module Instructions
+      # Handles the logic related to all possible Complement instructions
+      #
+      class Complement
+        attr_reader :mnemonic, :bytes, :cycles
+
+        # @param operation [Symbol] Which type of Complement operation
         #
-        class Complement
-          # @param operation [Symbol] Which type of Complement operation
-          #
-          def initialize(operation)
-            @operation = operation
+        def initialize(operation)
+          @operation = operation
 
-            super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
-            )
+          @mnemonic = metadata[:mnemonic]
+          @bytes = metadata[:bytes]
+          @cycles = metadata[:cycles]
+        end
+
+        def execute(cpu)
+          case @operation
+          when :cpl then cpl(cpu)
+          when :ccf then ccf(cpu)
+          when :scf then scf(cpu)
+          else raise ArgumentError, "Invalid Complement operation: #{@operation}."
           end
+        end
 
-          def execute(cpu)
-            case @operation
-            when :cpl then cpl(cpu)
-            when :ccf then ccf(cpu)
-            when :scf then scf(cpu)
-            else raise ArgumentError, "Invalid Complement operation: #{@operation}."
-            end
+        private
+
+        def metadata
+          case @operation
+          when :cpl
+            { mnemonic: 'CPL', bytes: 1, cycles: 4 }
+          when :ccf
+            { mnemonic: 'CCF', bytes: 1, cycles: 4 }
+          when :scf
+            { mnemonic: 'SCF', bytes: 1, cycles: 4 }
           end
+        end
 
-          private
+        # M-cycle 1 => Flips the bits of the A register
+        def cpl(cpu)
+          cpu.registers.a = ~cpu.registers.a
 
-          def metadata
-            case @operation
-            when :cpl
-              { mnemonic: 'CPL', bytes: 1, cycles: 4 }
-            when :ccf
-              { mnemonic: 'CCF', bytes: 1, cycles: 4 }
-            when :scf
-              { mnemonic: 'SCF', bytes: 1, cycles: 4 }
-            end
-          end
+          cpu.registers.n_flag = true
+          cpu.registers.h_flag = true
+        end
 
-          def cpl(cpu)
-            case cpu.ticks
-            when 4
-              cpu.registers.a = ~cpu.registers.a
+        # M-cycle 1 => Flips the current value of the C Flag
+        # Sets additional flags (N and H) to false
+        #
+        def ccf(cpu)
+          flipped_bit = cpu.registers.c_flag ^ 1
 
-              cpu.registers.n_flag = true
-              cpu.registers.h_flag = true
-            else wait
-            end
-          end
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = false
+          cpu.registers.c_flag = (flipped_bit == 1)
+        end
 
-          # Flips the current value of the C Flag
-          # Sets additional flags (N and H) to false
-          #
-          def ccf(cpu)
-            case cpu.ticks
-            when 4
-              flipped_bit = cpu.registers.c_flag ^ 1
-
-              cpu.registers.n_flag = false
-              cpu.registers.h_flag = false
-              cpu.registers.c_flag = (flipped_bit == 1)
-            else wait
-            end
-          end
-
-          # Sets the carry flag to 1
-          # Also clears the N and H flag
-          #
-          def scf(cpu)
-            case cpu.ticks
-            when 4
-              cpu.registers.n_flag = false
-              cpu.registers.h_flag = false
-              cpu.registers.c_flag = true
-            else wait
-            end
-          end
+        # M-cycle 1 => Sets the carry flag to 1
+        # Also clears the N and H flag
+        #
+        def scf(cpu)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = false
+          cpu.registers.c_flag = true
         end
       end
     end

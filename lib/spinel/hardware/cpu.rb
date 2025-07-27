@@ -41,6 +41,7 @@ module Spinel
           debug_info
           fetch_instruction
           execute
+          check_interrupt_schedule
         else
           handle_interrupts
         end
@@ -104,15 +105,27 @@ module Spinel
         advance_cycles
       end
 
+      def internal_delay
+        advance_cycles
+      end
+
       private
 
       def fetch_instruction
         @opcode = fetch_next_byte
+        @cb_prefix_mode = @opcode == 0xCB
       end
 
       def execute
         instruction_set = @cb_prefix_mode ? @cb_instructions : @instructions
         instruction_set[@opcode].execute(self)
+      end
+
+      def check_interrupt_schedule
+        return if @ime_flag_schedule == :none
+
+        @ime_flag = @ime_flag_schedule == :enable
+        @ime_flag_schedule = :none
       end
 
       def handle_interrupts

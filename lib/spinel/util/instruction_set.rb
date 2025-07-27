@@ -247,7 +247,7 @@ module Spinel
         instructions[0xD0] = Instructions::Subroutines.new(:ret_flag, :c_flag, 0)
         instructions[0xD1] = Instructions::Stack.new(:pop_reg16, :de)
         instructions[0xD2] = Instructions::Jp.new(:imm16, :c_flag, 0)
-        instructions[0xD3] = Instructions::Unused.new
+        instructions[0xD3] = nil
         instructions[0xD4] = Instructions::Subroutines.new(:call_imm16, :c_flag, 0)
         instructions[0xD5] = Instructions::Stack.new(:push_reg16, :de)
         instructions[0xD6] = Instructions::Sub.new(:sub_a_imm8)
@@ -255,9 +255,9 @@ module Spinel
         instructions[0xD8] = Instructions::Subroutines.new(:ret_flag, :c_flag, 1)
         instructions[0xD9] = Instructions::Subroutines.new(:reti)
         instructions[0xDA] = Instructions::Jp.new(:imm16, :c_flag, 1)
-        instructions[0xDB] = Instructions::Unused.new
+        instructions[0xDB] = nil
         instructions[0xDC] = Instructions::Subroutines.new(:call_imm16, :c_flag, 1)
-        instructions[0xDD] = Instructions::Unused.new
+        instructions[0xDD] = nil
         instructions[0xDE] = Instructions::Sbc.new(:sbc_a_imm8)
         instructions[0xDF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0018)
 
@@ -265,17 +265,17 @@ module Spinel
         instructions[0xE0] = Instructions::Load.new(:ldh_mem_imm8_a)
         instructions[0xE1] = Instructions::Stack.new(:pop_reg16, :hl)
         instructions[0xE2] = Instructions::Load.new(:ldh_mem_c_a)
-        instructions[0xE3] = Instructions::Unused.new
-        instructions[0xE4] = Instructions::Unused.new
+        instructions[0xE3] = nil
+        instructions[0xE4] = nil
         instructions[0xE5] = Instructions::Stack.new(:push_reg16, :hl)
         instructions[0xE6] = Instructions::And.new(:and_a_imm8)
         instructions[0xE7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0020)
         instructions[0xE8] = Instructions::Add.new(:sp_sig8)
         instructions[0xE9] = Instructions::Jp.new(:mem_hl)
         instructions[0xEA] = Instructions::Load.new(:ld_mem_imm16_a)
-        instructions[0xEB] = Instructions::Unused.new
-        instructions[0xEC] = Instructions::Unused.new
-        instructions[0xED] = Instructions::Unused.new
+        instructions[0xEB] = nil
+        instructions[0xEC] = nil
+        instructions[0xED] = nil
         instructions[0xEE] = Instructions::Xor.new(:xor_a_imm8)
         instructions[0xEF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0028)
 
@@ -284,7 +284,7 @@ module Spinel
         instructions[0xF1] = Instructions::Stack.new(:pop_reg16, :af)
         instructions[0xF2] = Instructions::Load.new(:ldh_a_mem_c)
         instructions[0xF3] = Instructions::Interrupt.new(:di)
-        instructions[0xF4] = Instructions::Unused.new
+        instructions[0xF4] = nil
         instructions[0xF5] = Instructions::Stack.new(:push_reg16, :af)
         instructions[0xF6] = Instructions::Or.new(:or_a_imm8)
         instructions[0xF7] = Instructions::Subroutines.new(:rst, fixed_address: 0x0030)
@@ -292,8 +292,8 @@ module Spinel
         instructions[0xF9] = Instructions::Load.new(:ld_sp_hl)
         instructions[0xFA] = Instructions::Load.new(:ld_a_mem_imm16)
         instructions[0xFB] = Instructions::Interrupt.new(:ei)
-        instructions[0xFC] = Instructions::Unused.new
-        instructions[0xFD] = Instructions::Unused.new
+        instructions[0xFC] = nil
+        instructions[0xFD] = nil
         instructions[0xFE] = Instructions::Compare.new(:cp_a_imm8)
         instructions[0xFF] = Instructions::Subroutines.new(:rst, fixed_address: 0x0038)
 

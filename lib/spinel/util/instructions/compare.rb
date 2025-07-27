@@ -7,26 +7,18 @@ module Spinel
         # Handles the logic related to all possible CP instructions
         #
         class Compare
-          VALID_OPERATIONS = %i[
-            cp_a_reg8
-            cp_a_mem_hl
-            cp_a_imm8
-          ].freeze
+          attr_reader :mnemonic, :bytes, :cycles
 
           # @param operation [Symbol] Which type of CP operation
           # @param register [Symbol] Register to execute the operation, if any
           #
           def initialize(operation, register = nil)
-            validate(operation)
-
             @operation = operation
             @register = register
 
-            super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
-            )
+            @mnemonic = metadata[:mnemonic]
+            @bytes = metadata[:bytes]
+            @cycles = metadata[:cycles]
           end
 
           def execute(cpu)
@@ -34,17 +26,12 @@ module Spinel
             when :cp_a_reg8   then cp_a_reg8(cpu)
             when :cp_a_mem_hl then cp_a_mem_hl(cpu)
             when :cp_a_imm8   then cp_a_imm8(cpu)
+            else
+              raise ArgumentError, "Invalid CP operation: #{@operation}."
             end
           end
 
           private
-
-          def validate(operation)
-            return if VALID_OPERATIONS.include?(operation)
-
-            raise ArgumentError, "Invalid CP operation: #{operation}. " \
-                                 "Must be one of #{VALID_OPERATIONS.inspect}"
-          end
 
           def metadata
             case @operation
@@ -73,47 +60,33 @@ module Spinel
           # Uses the value for a given 8-bit register
           # and performs the CP operation against the Accumulator
           #
+          # M-cycle 1 => Fetches opcode and perform operation
+          #
           def cp_a_reg8(cpu)
-            case cpu.ticks
-            when 4
-              reg8_value = cpu.registers.send(@register)
-              puts "Performing CP on A: #{format('%08B', cpu.registers.a)} - " \
-                   "#{@register.to_s.upcase}: #{format('%08B', reg8_value)}"
-              cp_a(cpu, reg8_value)
-            else wait
-            end
+            reg8_value = cpu.registers.send(@register)
+            cp_a(cpu, reg8_value)
           end
 
           # Fetch the byte which HL is pointing to in memory
           # And performs the CP operation with the Accumulator
           #
+          # M-cycle 1 => Fetches opcode
+          # M-cycle 2 => Reads the value at (HL) and compares with A
+          #
           def cp_a_mem_hl(cpu)
-            case cpu.ticks
-            when 5
-              address = cpu.registers.hl
-              cpu.request_read(address)
-            when 8
-              value_at_mem_hl = cpu.receive_data
-              puts "Performing CP on A: #{format('%08B', cpu.registers.a)} - " \
-                   "value at [HL]: #{format('%08B', value_at_mem_hl)}"
-              cp_a(cpu, value_at_mem_hl)
-            else wait
-            end
+            value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+            cp_a(cpu, value_at_mem_hl)
           end
 
           # Fetches the immediate byte following the Opcode
           # And performs the CP operation with the Accumulator
           #
+          # M-cycle 1 => Fetches opcode
+          # M-cycle 2 => Fetches next immediate byte and compares with A
+          #
           def cp_a_imm8(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read
-            when 8
-              immediate_byte = cpu.receive_data
-              puts "Performing CP on A: #{format('%08B', cpu.registers.a)} - " \
-                   "Immediate byte: #{format('%08B', immediate_byte)}"
-              cp_a(cpu, immediate_byte)
-            else wait
-            end
+            immediate_byte = cpu.fetch_next_byte
+            cp_a(cpu, immediate_byte)
           end
         end
       end

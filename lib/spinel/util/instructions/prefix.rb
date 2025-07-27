@@ -4,20 +4,20 @@ module Spinel
   module Util
     module Cpu
       module Instructions
+        # Prefixes the additional 256 Opcodes
         #
-        # Not Implemented instructions
         class Prefix
+          attr_reader :mnemonic, :bytes, :cycles
+
           def initialize
-            super(mnemonic: 'PREFIX', bytes: 1, cycles: 4)
+            @mnemonic = 'PREFIX'
+            @bytes = 1
+            @cycles = 4
           end
 
-          def execute(cpu)
-            case cpu.ticks
-            when 4
-              cpu.cb_prefix_mode = true
-            else wait
-            end
-          end
+          # M-cycle 1 => Fetches opcode
+          #
+          def execute(cpu); end
         end
       end
     end
