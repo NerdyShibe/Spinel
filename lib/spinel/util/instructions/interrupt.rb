@@ -7,6 +7,8 @@ module Spinel
       # Interrupt instructions
       #
       class Interrupt
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operation [Symbol] Which type of Interrupt
         #
         def initialize(operation)

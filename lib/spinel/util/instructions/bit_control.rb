@@ -6,6 +6,8 @@ module Spinel
       # Handles the logic related to all possible Bit Control instructions
       #
       class BitControl
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operation [Symbol] Which type of Bit Control operation
         #
         def initialize(operation, bit_position, operand = nil)

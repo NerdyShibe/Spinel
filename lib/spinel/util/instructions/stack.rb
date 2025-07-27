@@ -7,6 +7,8 @@ module Spinel
       # Stack instructions
       #
       class Stack
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operation [Symbol] Which type of Stack
         #
         def initialize(operation, register)

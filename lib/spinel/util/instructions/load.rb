@@ -6,6 +6,8 @@ module Spinel
       # Handles the logic related to all possible LD instructions
       #
       class Load
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operation [Symbol] Which type of Load operation
         # @param target_register [Symbol] Register to load the value, if any
         # @param source_register [Symbol] Register to get the value from, if any

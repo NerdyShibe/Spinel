@@ -7,6 +7,8 @@ module Spinel
       # CALL and RET instructions
       #
       class Subroutines
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operation [Symbol] Which type of Jump
         # @param flag [Symbol] Which flag to check for the jump (Z or C)
         # @param value_check [Integer] Value to check in the flag (1 or 0)

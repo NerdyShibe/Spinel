@@ -6,6 +6,8 @@ module Spinel
       # Handles the logic related to all possible Rotate instructions
       #
       class Rotate
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operation [Symbol] Which type of Rotate operation
         #
         def initialize(operation)
