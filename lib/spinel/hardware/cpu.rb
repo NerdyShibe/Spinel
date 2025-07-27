@@ -31,8 +31,8 @@ module Spinel
         @instruction = nil
 
         @cb_prefix_mode = false
-        @instructions = Util::Cpu::InstructionSet.build_unprefixed
-        @cb_instructions = Util::Cpu::InstructionSet.build_cb_prefixed
+        @instructions = Util::InstructionSet.build_unprefixed
+        @cb_instructions = Util::InstructionSet.build_cb_prefixed
         # debugger
       end
 
@@ -85,11 +85,23 @@ module Spinel
         signed_byte
       end
 
-      def calculate_add16(value1, value2)
+      def add16(value1, value2)
         sum = value1 + value2
         advance_cycles
 
         sum
+      end
+
+      def sub16(value1, value2)
+        sub = value1 - value2
+        advance_cycles
+
+        sub
+      end
+
+      def load16(register, value)
+        @registers.send("#{register}=", value)
+        advance_cycles
       end
 
       private

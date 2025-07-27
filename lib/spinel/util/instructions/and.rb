@@ -2,121 +2,92 @@
 
 module Spinel
   module Util
-    module Cpu
-      module Instructions
-        # Handles the logic related to all possible AND instructions
+    module Instructions
+      # Handles the logic related to all possible AND instructions
+      #
+      # AND A, reg8 => Performs a Bitwise And with A and a 8-bit register
+      # AND A, (HL) => Performs a Bitwise And with A and the value at (HL)
+      # AND A, imm8 => Performs a Bitwise And with A and the next immediate byte
+      #
+      class And
+        attr_reader :mnemonic, :bytes, :cycles
+
+        # @param operand_type [Symbol] Which type of operand (:reg8, :mem_hl, :imm8)
+        # @param operand [Symbol] Register to operate on, is only used for :reg8 mode
         #
-        class And
-          VALID_OPERATIONS = %i[
-            and_a_reg8
-            and_a_mem_hl
-            and_a_imm8
-          ].freeze
+        def initialize(operation_type, operand = nil)
+          @operation_type = operation_type
+          @operand = operand
 
-          # @param operation [Symbol] Which type of AND operation
-          # @param register [Symbol] Register to execute the operation, if any
-          #
-          def initialize(operation, register = nil)
-            validate(operation)
+          @mnemonic = current_mnemonic
+          @bytes = current_bytes
+          @cycles = current_cycles
+        end
 
-            @operation = operation
-            @register = register
-
-            super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
-            )
+        def execute(cpu)
+          case @operation_type
+          when :reg8   then and_a_reg8(cpu)
+          when :mem_hl then and_a_mem_hl(cpu)
+          when :imm8   then and_a_imm8(cpu)
+          else
+            raise ArgumentError, "Invalid AND operation type: #{@operation_type}"
           end
+        end
 
-          def execute(cpu)
-            case @operation
-            when :and_a_reg8   then and_a_reg8(cpu)
-            when :and_a_mem_hl then and_a_mem_hl(cpu)
-            when :and_a_imm8   then and_a_imm8(cpu)
-            end
+        private
+
+        def current_mnemonic
+          case @operand_type
+          when :reg8   then "AND A,#{@operand.to_s.upcase}"
+          when :mem_hl then 'AND A,(HL)'
+          when :imm8   then 'AND A,imm8'
           end
+        end
 
-          private
+        def current_bytes
+          @operand_type == :imm8 ? 2 : 1
+        end
 
-          def validate(operation)
-            return if VALID_OPERATIONS.include?(operation)
+        def current_cycles
+          @operand_type == :reg8 ? 4 : 8
+        end
 
-            raise ArgumentError, "Invalid AND operation: #{operation}. " \
-                                 "Must be one of #{VALID_OPERATIONS.inspect}"
-          end
+        # Groups the AND logic and setting the Flags into a single method
+        # Stores the result into the Accumulator
+        #
+        def and_a(cpu, value)
+          accumulator = cpu.registers.a
+          result = accumulator & value
 
-          def metadata
-            case @operation
-            when :and_a_reg8
-              { mnemonic: "AND A, #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
-            when :and_a_mem_hl
-              { mnemonic: 'AND A, [HL]', bytes: 1, cycles: 8 }
-            when :and_a_imm8
-              { mnemonic: 'AND A, imm8', bytes: 2, cycles: 8 }
-            end
-          end
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = false
+          cpu.registers.h_flag = true
+          cpu.registers.c_flag = false
 
-          # Groups the AND logic and setting the Flags into a single method
-          # Stores the result into the Accumulator
-          #
-          def and_a(cpu, value)
-            accumulator = cpu.registers.a
-            result = accumulator & value
+          cpu.registers.a = result
+        end
 
-            cpu.registers.z_flag = result.nobits?(0xFF)
-            cpu.registers.n_flag = false
-            cpu.registers.h_flag = true
-            cpu.registers.c_flag = false
+        # M-Cycle 1 => Fetches opcode and performs the AND with A and a 8-bit register
+        #
+        def and_a_reg8(cpu)
+          reg8_value = cpu.registers.send(@operand)
+          and_a(cpu, reg8_value)
+        end
 
-            cpu.registers.a = result
-          end
+        # M-Cycle 1 => Fetches opcode
+        # M-Cycle 2 => Fetches byte at (HL) and performs the AND with A
+        #
+        def and_a_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          and_a(cpu, value_at_mem_hl)
+        end
 
-          # Uses the value for a given 8-bit register
-          # and performs the AND operation against the Accumulator
-          #
-          def and_a_reg8(cpu)
-            case cpu.ticks
-            when 4
-              reg8_value = cpu.registers.send(@register)
-              puts "Performing AND on A: #{format('%08B', cpu.registers.a)} & " \
-                   "#{@register.to_s.upcase}: #{format('%08B', reg8_value)}"
-              and_a(cpu, reg8_value)
-            else wait
-            end
-          end
-
-          # Fetch the byte which HL is pointing to in memory
-          # And performs the AND operation with the Accumulator
-          #
-          def and_a_mem_hl(cpu)
-            case cpu.ticks
-            when 5
-              address = cpu.registers.hl
-              cpu.request_read(address)
-            when 8
-              value_at_mem_hl = cpu.receive_data
-              puts "Performing AND on A: #{format('%08B', cpu.registers.a)} & " \
-                   "value at [HL]: #{format('%08B', value_at_mem_hl)}"
-              and_a(cpu, value_at_mem_hl)
-            else wait
-            end
-          end
-
-          # Fetches the immediate byte following the Opcode
-          # And performs the AND operation with the Accumulator
-          #
-          def and_a_imm8(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read
-            when 8
-              immediate_byte = cpu.receive_data
-              puts "Performing AND on A: #{format('%08B', cpu.registers.a)} & " \
-                   "Immediate byte: #{format('%08B', immediate_byte)}"
-              and_a(cpu, immediate_byte)
-            else wait
-            end
-          end
+        # M-Cycle 1 => Fetches opcode
+        # M-Cycle 2 => Fetches next immediate byte and performs the AND with A
+        #
+        def and_a_imm8(cpu)
+          immediate_byte = cpu.fetch_next_byte
+          and_a(cpu, immediate_byte)
         end
       end
     end

@@ -10,6 +10,8 @@ module Spinel
       # ADD A, imm8 => Adds the value of the next immediate byte into A
       #
       class Add
+        attr_reader :mnemonic, :bytes, :cycles
+
         # @param operand_type [Symbol] Which type of operand (:reg8, :mem_hl, :imm8)
         # @param operand [Symbol] Register to operate on, is only used for :reg8 mode
         #
@@ -98,7 +100,7 @@ module Spinel
         def add_hl_reg16(cpu)
           reg16_value = cpu.registers.send(@operand)
           hl_value = cpu.registers.hl
-          result = cpu.calculate_add16(hl_value, reg16_value)
+          result = cpu.add16(hl_value, reg16_value)
 
           cpu.registers.n_flag = false
           cpu.registers.h_flag = ((hl_value & 0x0FFF) + (reg16_value & 0x0FFF)) > 0x0FFF
@@ -116,7 +118,7 @@ module Spinel
           sp_value = cpu.registers.sp
           unsigned_byte = cpu.fetch_next_byte
           signed_byte = cpu.sign_value(unsigned_byte)
-          result = cpu.calculate_add16(sp_value, signed_byte)
+          result = cpu.add16(sp_value, signed_byte)
 
           cpu.registers.z_flag = false
           cpu.registers.n_flag = false

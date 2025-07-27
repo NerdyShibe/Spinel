@@ -2,121 +2,98 @@
 
 module Spinel
   module Util
-    module Cpu
-      module Instructions
-        # Handles the logic related to all possible ADD instructions
+    module Instructions
+      # Handles the logic related to all possible ADD instructions
+      #
+      class Dec
+        attr_reader :mnemonic, :bytes, :cycles
+
+        # @param operation [Symbol] Which type of increment
+        # @param register [Symbol] Register to perform the operation
         #
-        class Dec
-          VALID_OPERATIONS = %i[
-            dec_reg8
-            dec_mem_hl
-            dec_reg16
-          ].freeze
+        def initialize(operation, register = nil)
+          @operation = operation
+          @register = register
 
-          # @param operation [Symbol] Which type of increment
-          # @param register [Symbol] Register to perform the operation
-          #
-          def initialize(operation, register = nil)
-            validate(operation)
+          @mnemonic = metadata[:mnemonic]
+          @bytes = metadata[:bytes]
+          @cycles = metadata[:cycles]
+        end
 
-            @operation = operation
-            @register = register
-
-            super(
-              mnemonic: metadata[:mnemonic],
-              bytes: metadata[:bytes],
-              cycles: metadata[:cycles]
-            )
+        # @param cpu [Object] Instance of the Cpu to perform the instruction
+        #
+        def execute(cpu)
+          case @operation
+          when :dec_reg8   then dec_reg8(cpu)
+          when :dec_mem_hl then dec_mem_hl(cpu)
+          when :dec_reg16  then dec_reg16(cpu)
+          else
+            raise ArgumentError, "Invalid DEC operation: #{@operation}."
           end
+        end
 
-          # @param cpu [Object] Instance of the Cpu to perform the instruction
-          #
-          def execute(cpu)
-            case @operation
-            when :dec_reg8   then dec_reg8(cpu)
-            when :dec_mem_hl then dec_mem_hl(cpu)
-            when :dec_reg16  then dec_reg16(cpu)
-            end
+        private
+
+        def metadata
+          case @operation
+          when :dec_reg8
+            { mnemonic: "DEC #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
+          when :dec_mem_hl
+            { mnemonic: 'DEC [HL]', bytes: 1, cycles: 12 }
+          when :dec_reg16
+            { mnemonic: "DEC #{@register.to_s.upcase}", bytes: 1, cycles: 8 }
           end
+        end
 
-          private
+        # @param cpu [Object] Instance of the Cpu
+        # @param result [Integer] Result of the operation (increment)
+        # @param original_value [Integer] Previous value, before the increment
+        #
+        def update_flags(cpu, result, original_value)
+          cpu.registers.z_flag = result.nobits?(0xFF)
+          cpu.registers.n_flag = true
+          cpu.registers.h_flag = original_value.nobits?(0x0F)
+        end
 
-          def validate(operation)
-            return if VALID_OPERATIONS.include?(operation)
+        # Decrements a given 8-bit register
+        #
+        # M-cycle 1 => Fetches opcode and decrements a given 8-bit register
+        #
+        def dec_reg8(cpu)
+          reg8_value = cpu.registers.send(@register)
+          result = reg8_value - 1
 
-            raise ArgumentError, "Invalid DEC operation: #{operation}. " \
-                                 "Must be one of #{VALID_OPERATIONS.inspect}"
-          end
+          update_flags(cpu, result, reg8_value)
 
-          def metadata
-            case @operation
-            when :dec_reg8
-              { mnemonic: "DEC #{@register.to_s.upcase}", bytes: 1, cycles: 4 }
-            when :dec_mem_hl
-              { mnemonic: 'DEC [HL]', bytes: 1, cycles: 12 }
-            when :dec_reg16
-              { mnemonic: "DEC #{@register.to_s.upcase}", bytes: 1, cycles: 8 }
-            end
-          end
+          cpu.registers.send("#{@register}=", result)
+        end
 
-          # @param cpu [Object] Instance of the Cpu
-          # @param result [Integer] Result of the operation (increment)
-          # @param original_value [Integer] Previous value, before the increment
-          #
-          def update_flags(cpu, result, original_value)
-            cpu.registers.z_flag = result.nobits?(0xFF)
-            cpu.registers.n_flag = true
-            cpu.registers.h_flag = original_value.nobits?(0x0F)
-          end
+        # Increments the value that HL is pointing to in memory
+        #
+        # M-cycle 1 => Fetches opcode
+        # M-cycle 2 => Reads the value at (HL)
+        # M-cycle 3 => Decrements the value and writes it back to (HL)
+        #
+        def dec_mem_hl(cpu)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
+          result = value_at_mem_hl - 1
 
-          # Decrements a given 8-bit register
-          #
-          def dec_reg8(cpu)
-            case cpu.ticks
-            when 4
-              reg8_value = cpu.registers.send(@register)
-              puts "Subtracting 1 from #{@register.to_s.upcase}: #{format('%02X', reg8_value)}"
-              result = reg8_value - 1
+          update_flags(cpu, result, value_at_mem_hl)
 
-              update_flags(cpu, result, reg8_value)
+          cpu.bus_write(cpu.registers.hl, result)
+        end
 
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+        # Decrements a given 16-bit special register
+        # Does not affect the registers flags
+        #
+        # M-cycle 1 => Fetches opcode
+        # M-cycle 2 => Performs the 16-bit subtraction
+        #
+        def dec_reg16(cpu)
+          reg16_value = cpu.registers.send(@register)
+          result = cpu.sub16(reg16_value, 1)
 
-          # Increments the value that HL is pointing to in memory
-          #
-          def dec_mem_hl(cpu)
-            case cpu.ticks
-            when 5 then cpu.request_read(cpu.registers.hl)
-            when 8 then @value_at_mem_hl = cpu.receive_data
-            when 9 then cpu.request_write(cpu.registers.hl)
-            when 12
-              puts "Subtracting 1 from the value at [HL]: #{format('%02X', @value_at_mem_hl)}"
-              result = @value_at_mem_hl - 1
-
-              update_flags(cpu, result, @value_at_mem_hl)
-
-              cpu.confirm_write(result)
-            else wait
-            end
-          end
-
-          # Decrements a given 16-bit special register
-          # Does not affect the registers flags
-          #
-          def dec_reg16(cpu)
-            case cpu.ticks
-            when 8
-              reg16_value = cpu.registers.send(@register)
-              puts "Subtracting 1 from #{@register.to_s.upcase}: #{format('%04X', reg16_value)}"
-              result = reg16_value - 1
-
-              cpu.registers.send("#{@register}=", result)
-            else wait
-            end
-          end
+          cpu.registers.send("#{@register}=", result)
         end
       end
     end
