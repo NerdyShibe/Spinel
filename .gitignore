@@ -2,7 +2,9 @@
 .vscode/
 .ruby-lsp/
 coverage/
+docs/
 roms/
+test_roms/
 tmp/
 
 .tool-versions
