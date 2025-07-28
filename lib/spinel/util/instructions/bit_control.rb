@@ -66,10 +66,13 @@ module Spinel
         # M-cycle 1 => Fetch 0xCB prefix opcode
         # M-cycle 2 => Fetch current opcode
         # M-cycle 3 => Read value at (HL) and execute instruction
+        # M-cycle 4 => Internal processing
         #
         def bit_mem_hl(cpu)
           value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
           bit_result = (value_at_mem_hl >> @bit_position) & 1
+
+          cpu.internal_delay
 
           cpu.registers.z_flag = bit_result.zero?
           cpu.registers.n_flag = false
