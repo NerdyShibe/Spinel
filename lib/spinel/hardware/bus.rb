@@ -24,7 +24,7 @@ module Spinel
     # ===============================================================================================
     #
     class Bus
-      def initialize(cartridge, ppu, vram, wram, hram, interrupts, serial, timer) # rubocop:disable Metrics/ParameterLists
+      def initialize(cartridge, ppu, vram, wram, hram, interrupts, serial, timer, joypad) # rubocop:disable Metrics/ParameterLists
         @cartridge = cartridge
         @ppu = ppu
         @vram = vram
@@ -33,6 +33,7 @@ module Spinel
         @interrupts = interrupts
         @serial = serial
         @timer = timer
+        @joypad = joypad
       end
 
       # Delegates which component should be involved
@@ -43,26 +44,27 @@ module Spinel
       #
       def read_byte(address)
         case address
-        # TODO: Implement ROM bank switching
-        when 0x0000..0x3FFF then @cartridge.read_byte(address)
-        when 0x4000..0x7FFF then @cartridge.read_byte(address)
+        when 0x0000..0x3FFF then @cartridge.rom_read(address)
+        when 0x4000..0x7FFF then @cartridge.rom_read(address)
         when 0x8000..0x9FFF then @vram.read_byte(address)
-        # when 0xA000..0xBFFF then @cartridge.external_ram.ready_byte(address)
+        when 0xA000..0xBFFF then @cartridge.ram_read(address)
         when 0xC000..0xDFFF then @wram.read_byte(address)
         when 0xE000..0xFDFF then @wram.read_byte(address - 0x2000)
         when 0xFE00..0xFE9F then @ppu.read_oam(address)
         when 0xFEA0..0xFEFF then 0xFF
         when 0xFF00..0xFF7F
           case address
+          when 0xFF00 then @joypad.read_byte(address)
           when 0xFF01..0xFF02 then @serial.read_byte(address)
           when 0xFF04..0xFF07 then @timer.read_byte(address)
           when 0xFF0F then @interrupts.read_byte(address)
           when 0xFF40..0xFF4B then @ppu.read_registers(address)
+          else raise StandardError, "Memory out of bounds at: #{format('%04X', address)}"
           end
         when 0xFF80..0xFFFE then @hram.read_byte(address)
         when 0xFFFF then @interrupts.read_byte(address)
         else
-          raise MemoryOutOfBoundsError, "This address is out of bounds: $#{format('%04X', address)}"
+          raise StandardError, "Memory out of bounds at: #{format('%04X', address)}"
         end
       end
 
@@ -70,21 +72,21 @@ module Spinel
       # depending on the address range
       #
       # @param address [Integer] => 16-bit value
-      # @return [Integer] => 8-bit value
+      # @param value [Integer] => 8-bit value
       #
       def write_byte(address, value)
         case address
-        # TODO: Implement ROM bank switching
-        when 0x0000..0x3FFF then @cartridge.write_byte(address, value)
-        when 0x4000..0x7FFF then @cartridge.write_byte(address, value)
+        when 0x0000..0x3FFF then @cartridge.rom_write(address, value)
+        when 0x4000..0x7FFF then @cartridge.rom_write(address, value)
         when 0x8000..0x9FFF then @vram.write_byte(address, value)
-        # when 0xA000..0xBFFF then @cartridge.external_ram.ready_byte(address)
+        when 0xA000..0xBFFF then @cartridge.ram_write(address, value)
         when 0xC000..0xDFFF then @wram.write_byte(address, value)
         when 0xE000..0xFDFF then @wram.write_byte(address, value - 0x2000)
         when 0xFE00..0xFE9F then @ppu.write_byte(address, value)
         when 0xFEA0..0xFEFF then 0xFF
         when 0xFF00..0xFF7F
           case address
+          when 0xFF00 then @joypad.write_byte(address, value)
           when 0xFF01..0xFF02 then @serial.write_byte(address, value)
           when 0xFF04..0xFF07 then @timer.write_byte(address, value)
           when 0xFF0F then @interrupts.write_byte(address, value)
@@ -93,7 +95,7 @@ module Spinel
         when 0xFF80..0xFFFE then @hram.write_byte(address, value)
         when 0xFFFF then @interrupts.write_byte(address, value)
         else
-          raise MemoryOutOfBoundsError, "This address is out of bounds: $#{format('%04X', address)}"
+          raise StandardError, "Memory out of bounds at: #{format('%04X', address)}"
         end
       end
     end
