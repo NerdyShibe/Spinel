@@ -4,6 +4,8 @@ source 'https://rubygems.org'
 
 ruby '3.4.4'
 
+gem 'ffi'
+
 group :development do
   gem 'debug'
   gem 'rubocop'
