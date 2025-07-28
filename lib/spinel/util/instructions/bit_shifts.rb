@@ -68,13 +68,13 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def rlc_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           bit7 = (register >> 7) & 1
 
           result = (register << 1) | bit7
 
           update_flags(cpu, result, bit7)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -102,13 +102,13 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def rrc_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           bit0 = register & 1
 
           result = (bit0 << 7) | (register >> 1)
 
           update_flags(cpu, result, bit0)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -136,14 +136,14 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def rl_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           carry_in = cpu.registers.c_flag
           new_carry = (register >> 7) & 1
 
           result = (register << 1) | carry_in
 
           update_flags(cpu, result, new_carry)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -172,14 +172,14 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def rr_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           carry_in = cpu.registers.c_flag
           new_carry = register & 1
 
           result = (carry_in << 7) | (register >> 1)
 
           update_flags(cpu, result, new_carry)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -208,13 +208,13 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def sla_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           bit7 = (register >> 7) & 1
 
           result = (register << 1) | 0
 
           update_flags(cpu, result, bit7)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -242,14 +242,14 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def sra_reg8(cpu)
-          reg8_value = cpu.registers.send(@register)
+          reg8_value = cpu.registers.send(@operand)
           bit7 = (reg8_value >> 7) & 1
           bit0 = reg8_value & 1
 
           result = (bit7 << 7) | (reg8_value >> 1)
 
           update_flags(cpu, result, bit0)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -278,12 +278,12 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def swap_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           lower4 = register & 0x0F
           upper4 = register >> 4
 
           result = (lower4 << 4) | upper4
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
 
           cpu.registers.z_flag = result.nobits?(0xFF)
           cpu.registers.n_flag = false
@@ -321,13 +321,13 @@ module Spinel
         # M-cycle 2 => Fetches current opcode and executes instruction
         #
         def srl_reg8(cpu)
-          register = cpu.registers.send(@register)
+          register = cpu.registers.send(@operand)
           bit0 = register & 1
 
           result = 0 | (register >> 1)
 
           update_flags(cpu, result, bit0)
-          cpu.registers.send("#{@register}=", result)
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
