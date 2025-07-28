@@ -40,9 +40,7 @@ module Spinel
           old_trigger_bit = @registers.div_bit_trigger
           @registers.div = 0x00
 
-          if timer_enabled? && old_trigger_bit == 1
-            increment_tima
-          end
+          increment_tima if timer_enabled? && old_trigger_bit == 1
         when 0xFF05 then @registers.tima = value
         when 0xFF06 then @registers.tma = value
         when 0xFF07
@@ -54,15 +52,9 @@ module Spinel
           new_trigger_bit = @registers.div_bit_trigger
           is_now_disabled = !timer_enabled?
 
-          if timer_enabled? && old_trigger_bit == 1 && new_trigger_bit == 0
-            increment_tima
-          end
+          increment_tima if timer_enabled? && old_trigger_bit == 1 && new_trigger_bit.zero?
 
-          if was_enabled && is_now_disabled
-            if old_trigger_bit == 1
-              increment_tima
-            end
-          end
+          increment_tima if was_enabled && is_now_disabled && (old_trigger_bit == 1)
         end
       end
 

@@ -16,6 +16,22 @@ module Spinel
         @registers = Registers.new
       end
 
+      def read_if
+        @registers.if
+      end
+
+      def read_ie
+        @registers.ie
+      end
+
+      def write_if(value)
+        @registers.if = value
+      end
+
+      def write_ie(value)
+        @registers.ie = value
+      end
+
       def read_byte(address)
         case address
         when 0xFF0F then @registers.if
@@ -33,12 +49,12 @@ module Spinel
       # Called by hardware (Timer, PPU, etc.) to request an interrupt
       def request(type)
         bit = INTERRUPTS[type]
-        @if |= (1 << bit)
+        @registers.if |= (1 << bit)
       end
 
       # Used internally by the CPU to clear a serviced interrupt flag
       def clear(bit)
-        @if &= ~(1 << bit)
+        @registers.if &= ~(1 << bit)
       end
     end
   end
