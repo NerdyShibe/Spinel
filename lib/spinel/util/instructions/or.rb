@@ -48,7 +48,7 @@ module Spinel
         #
         def or_a(cpu, value)
           accumulator = cpu.registers.a
-          result = accumulator & value
+          result = accumulator | value
 
           cpu.registers.z_flag = result.nobits?(0xFF)
           cpu.registers.n_flag = false
