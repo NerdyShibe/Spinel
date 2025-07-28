@@ -1,12 +1,24 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Cartridge
+  class Cartridge
+    # External RAM inside the Cartridge
+    #
+    # Mapped to the address range: $A000 - $BFFF
+    # Holds 8192 bytes = 8 KiB of memory
+    #
     class Ram
       def initialize
-        # based on the cartridge type
-        # map all possible external RAM banks
-        # each one should be 4 KiB
+        @data = Array.new(8192, 0x00)
+        @start_offset = 0xA000
+      end
+
+      def read_byte(address)
+        @data[address - @start_offset]
+      end
+
+      def write_byte(address, byte)
+        @data[address - @start_offset] = byte
       end
     end
   end

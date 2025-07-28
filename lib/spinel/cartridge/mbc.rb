@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Cartridge
+  class Cartridge
     class Mbc
       # TODO
     end

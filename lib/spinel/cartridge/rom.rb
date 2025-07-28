@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Spinel
-  module Cartridge
+  class Cartridge
     #
     # When the game is loaded
     # this class needs to map all possible
@@ -10,11 +10,11 @@ module Spinel
     class Rom
       attr_reader :data
 
+      # @param rom_file [String] Path to the rom file
       #
-      # @param Receives the path/to/file.gb
-      def initialize(file_path)
+      def initialize(rom_file)
         # Will have an array of bytes in decimal format [0, 255]
-        @data = File.binread(file_path).bytes
+        @data = File.binread(rom_file).bytes
 
         # print_full_info
       end
@@ -24,7 +24,7 @@ module Spinel
         data[address]
       end
 
-      def write_byte(value)
+      def write_byte(address, value)
         # TODO: Implement Bank switching logic
         data[address] = value
       end
