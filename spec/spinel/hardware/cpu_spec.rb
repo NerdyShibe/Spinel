@@ -1,60 +1,66 @@
 # frozen_string_literal: true
 
 RSpec.describe Spinel::Hardware::Cpu, type: :cpu do
-  subject(:cpu) { described_class.new(mock_bus) }
+  subject(:cpu) { described_class.new(emu, bus, interrupts, serial) }
 
-  let(:mock_bus) { instance_double(Spinel::Hardware::Bus) }
+  let(:emu)        { instance_double(Spinel::Emulator) }
+  let(:bus)        { instance_double(Spinel::Hardware::Bus) }
+  let(:interrupts) { instance_double(Spinel::Hardware::Interrupts) }
+  let(:serial)     { instance_double(Spinel::Hardware::Serial) }
 
   describe '#initialize' do
     it 'initializes the registers' do
-      expect(cpu.registers).to be_an_instance_of(Spinel::Cpu::Registers)
+      expect(cpu.registers).to be_an_instance_of(Spinel::Hardware::Cpu::Registers)
+    end
+
+    it 'starts at 0 m-cycles' do
+      expect(cpu.m_cycles).to eq(0)
     end
   end
 
-  describe '#tick' do
-    context 'when handling the (0x00 => NOP) instruction' do
-      before do
-        cpu.registers.pc = 0xC000
-        opcode = 0x00
-        allow(mock_bus).to receive(:read).with(0xC000).and_return(opcode)
-      end
-
-      it 'takes 4 cycles to complete' do
-        4.times { cpu.tick }
-
-        expect(cpu.registers.pc).to eq(0xC001)
-      end
+  describe '#bus_read' do
+    before do
+      allow(emu).to receive(:advance_cycles)
+      allow(bus).to receive(:read_byte).with(0x0100).and_return(0x69)
     end
 
-    context 'when handling the (0xC3 => JP a16) instruction' do
-      let(:bytes) { [0xC3, 0x50, 0x01] } #=> JP $150
+    it 'fetches the correct value from the bus' do
+      fetched_byte = cpu.bus_read(0x0100)
 
-      before do
-        cpu.registers.pc = 0xC000
-        load_program(mock_bus, bytes, start_address: 0xC000)
-      end
+      expect(fetched_byte).to eq(0x69)
+    end
 
-      it 'fetches the opcode, low byte, high byte and jumps to address' do
-        # Cycles 1-4
-        expect { 4.times { cpu.tick } }.to change(cpu.registers, :pc).from(0xC000).to(0xC001)
-        expect(mock_bus).to have_received(:read).with(0xC000).once
+    it 'increments the amount of m-cycles on the Cpu by 1' do
+      expect { cpu.bus_read(0x0100) }.to change(cpu, :m_cycles).from(0).to(1)
+    end
 
-        # Cycles 5-8
-        expect { 4.times { cpu.tick } }.to change(cpu.registers, :pc).from(0xC001).to(0xC002)
-        expect(mock_bus).to have_received(:read).with(0xC001).once
-        expect(cpu.operand_low).to eq(0x50)
+    it 'advances the total emulator t-cycles by 4' do
+      cpu.bus_read(0x0100)
 
-        # Cycles 9-12
-        expect { 4.times { cpu.tick } }.to change(cpu.registers, :pc).from(0xC002).to(0xC003)
-        expect(mock_bus).to have_received(:read).with(0xC002).once
-        expect(cpu.operand_high).to eq(0x01)
+      expect(emu).to have_received(:advance_cycles).with(4)
+    end
+  end
 
-        # Cycles 13-15
-        expect { 3.times { cpu.tick } }.not_to change(cpu.registers, :pc)
+  describe '#bus_write' do
+    before do
+      allow(emu).to receive(:advance_cycles)
+      allow(bus).to receive(:write_byte).with(0x0100, 0x69)
+    end
 
-        # Cycle 16
-        expect { cpu.tick }.to change(cpu.registers, :pc).from(0xC003).to(0x0150)
-      end
+    it 'correctly calls the bus to write the value at that address' do
+      cpu.bus_write(0x100, 0x69)
+
+      expect(bus).to have_received(:write_byte).with(0x0100, 0x69)
+    end
+
+    it 'increments the amount of m-cycles on the Cpu by 1' do
+      expect { cpu.bus_write(0x100, 0x69) }.to change(cpu, :m_cycles).from(0).to(1)
+    end
+
+    it 'advances the total emulator t-cycles by 4' do
+      cpu.bus_write(0x100, 0x69)
+
+      expect(emu).to have_received(:advance_cycles).with(4)
     end
   end
 end
