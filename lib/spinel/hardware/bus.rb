@@ -59,7 +59,7 @@ module Spinel
           when 0xFF04..0xFF07 then @timer.read_byte(address)
           when 0xFF0F then @interrupts.read_byte(address)
           when 0xFF40..0xFF4B then @ppu.read_registers(address)
-          else raise StandardError, "Memory out of bounds at: #{format('%04X', address)}"
+          else 0xFF
           end
         when 0xFF80..0xFFFE then @hram.read_byte(address)
         when 0xFFFF then @interrupts.read_byte(address)
@@ -82,7 +82,7 @@ module Spinel
         when 0xA000..0xBFFF then @cartridge.ram_write(address, value)
         when 0xC000..0xDFFF then @wram.write_byte(address, value)
         when 0xE000..0xFDFF then @wram.write_byte(address, value - 0x2000)
-        when 0xFE00..0xFE9F then @ppu.write_byte(address, value)
+        when 0xFE00..0xFE9F then @ppu.write_oam(address, value)
         when 0xFEA0..0xFEFF then 0xFF
         when 0xFF00..0xFF7F
           case address
@@ -90,7 +90,8 @@ module Spinel
           when 0xFF01..0xFF02 then @serial.write_byte(address, value)
           when 0xFF04..0xFF07 then @timer.write_byte(address, value)
           when 0xFF0F then @interrupts.write_byte(address, value)
-          when 0xFF40..0xFF4B then @ppu.write_byte(address, value)
+          when 0xFF40..0xFF4B then @ppu.write_registers(address, value)
+          else 0xFF
           end
         when 0xFF80..0xFFFE then @hram.write_byte(address, value)
         when 0xFFFF then @interrupts.write_byte(address, value)

@@ -18,7 +18,7 @@ module Spinel
       end
 
       def write_byte(address, byte)
-        @data[address - @start_offset] = byte
+        @data[address - @start_offset] = byte & 0xFF
       end
     end
   end

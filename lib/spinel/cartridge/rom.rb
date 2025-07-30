@@ -16,7 +16,7 @@ module Spinel
         # Will have an array of bytes in decimal format [0, 255]
         @data = File.binread(rom_file).bytes
 
-        # print_full_info
+        print_full_info
       end
 
       def read_byte(address)
@@ -26,7 +26,7 @@ module Spinel
 
       def write_byte(address, value)
         # TODO: Implement Bank switching logic
-        data[address] = value
+        data[address] = value & 0xFF
       end
 
       # Each cartridge contains a header, located at the address range $0100—$014F.

@@ -10,20 +10,20 @@ module Spinel
     #
     class Vram
       def initialize
-        @bytes = Array.new(8192, 0x00) # 8 KiB
+        @data = Array.new(8192, 0x00) # 8 KiB
         @start_offset = 0x8000
       end
 
       def read_byte(address)
         raise('Address is out of bounds') unless valid?(address)
 
-        @bytes[address - @start_offset]
+        @data[address - @start_offset]
       end
 
       def write_byte(address, byte)
         raise('Address is out of bounds') unless valid?(address)
 
-        @bytes[address - @start_offset] = byte & 0xFF
+        @data[address - @start_offset] = byte & 0xFF
       end
 
       private

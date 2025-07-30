@@ -25,7 +25,7 @@ module Spinel
         def write_byte(address, byte)
           return if [Modes::OAM_SCAN, Modes::DRAWING].include?(@ppu.mode)
 
-          @data[address - start_offset] = byte
+          @data[address - @start_offset] = byte & 0xFF
         end
       end
     end
