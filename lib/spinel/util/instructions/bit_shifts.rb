@@ -280,15 +280,16 @@ module Spinel
         def swap_reg8(cpu)
           register = cpu.registers.send(@operand)
           lower4 = register & 0x0F
-          upper4 = register >> 4
+          upper4 = (register >> 4) & 0x0F
 
           result = (lower4 << 4) | upper4
-          cpu.registers.send("#{@operand}=", result)
 
           cpu.registers.z_flag = result.nobits?(0xFF)
           cpu.registers.n_flag = false
           cpu.registers.h_flag = false
           cpu.registers.c_flag = false
+
+          cpu.registers.send("#{@operand}=", result)
         end
 
         # M-cycle 1 => Fetches 0xCB prefix opcode
@@ -299,7 +300,7 @@ module Spinel
         def swap_mem_hl(cpu)
           value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
           lower4 = value_at_mem_hl & 0x0F
-          upper4 = value_at_mem_hl >> 4
+          upper4 = (value_at_mem_hl >> 4) & 0x0F
 
           result = (lower4 << 4) | upper4
 
@@ -324,7 +325,7 @@ module Spinel
           register = cpu.registers.send(@operand)
           bit0 = register & 1
 
-          result = 0 | (register >> 1)
+          result = (0 << 7) | (register >> 1)
 
           update_flags(cpu, result, bit0)
           cpu.registers.send("#{@operand}=", result)
@@ -339,7 +340,7 @@ module Spinel
           value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
           bit0 = value_at_mem_hl & 1
 
-          rotated_value = 0 | (value_at_mem_hl >> 1)
+          rotated_value = (0 << 7) | (value_at_mem_hl >> 1)
 
           update_flags(cpu, rotated_value, bit0)
           cpu.bus_write(cpu.registers.hl, rotated_value)
