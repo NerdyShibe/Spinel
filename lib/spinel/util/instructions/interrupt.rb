@@ -64,13 +64,12 @@ module Spinel
         end
 
         # Disable interrupts
-        # Sets @ime_flag = false in the cpu, but only
-        # on the last tick of the next instruction
+        # Sets @ime_flag = false in the cpu
         #
         # M-cycle 1 => Fetches opcode and execute instruction
         #
         def di(cpu)
-          cpu.ime_flag_schedule = :disable
+          cpu.ime_flag = false
         end
 
         # Enable interrupts
@@ -80,7 +79,7 @@ module Spinel
         # M-cycle 1 => Fetches opcode and execute instruction
         #
         def ei(cpu)
-          cpu.ime_flag_schedule = :enable
+          cpu.ime_flag_schedule = true
         end
       end
     end
