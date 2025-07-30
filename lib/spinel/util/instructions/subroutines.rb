@@ -100,7 +100,8 @@ module Spinel
           return if @flag != :none && cpu.registers.send(@flag) != @value_check
 
           jump_address = cpu.calculate_address(lsb, msb)
-          return_address = cpu.registers.pc + bytes
+
+          return_address = cpu.registers.pc
           return_address_lsb = return_address & 0xFF
           return_address_msb = (return_address >> 8) & 0xFF
 
@@ -181,7 +182,8 @@ module Spinel
         #
         def rst(cpu)
           cpu.internal_delay
-          return_address = cpu.registers.pc + bytes
+
+          return_address = cpu.registers.pc
           return_address_lsb = return_address & 0xFF
           return_address_msb = (return_address >> 8) & 0xFF
 
