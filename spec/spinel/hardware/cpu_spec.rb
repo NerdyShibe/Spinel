@@ -4,7 +4,7 @@ RSpec.describe Spinel::Hardware::Cpu, type: :cpu do
   subject(:cpu) { described_class.new(emu, bus, interrupts, serial) }
 
   let(:emu)        { instance_double(Spinel::Emulator) }
-  let(:bus)        { instance_double(Spinel::Hardware::Bus) }
+  let(:bus)        { instance_double(Spinel::Hardware::AddressBus) }
   let(:interrupts) { instance_double(Spinel::Hardware::Interrupts) }
   let(:serial)     { instance_double(Spinel::Hardware::Serial) }
 

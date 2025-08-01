@@ -1,7 +1,7 @@
 # rubocop:disable RSpec/MultipleMemoizedHelpers
 # frozen_string_literal: true
 
-RSpec.describe Spinel::Hardware::Bus, type: :bus do
+RSpec.describe Spinel::Hardware::AddressBus, type: :bus do
   subject(:bus) { described_class.new(rom, ppu, vram, wram, hram, interrupts, serial, timer) }
 
   let(:rom)        { instance_double(Spinel::Cartridge::Rom) }
