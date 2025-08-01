@@ -3,21 +3,31 @@
 module Spinel
   module Hardware
     # Pixel Processing Unit
+    #
     class Ppu
       attr_reader :mode
 
-      def initialize
+      def initialize(vram)
         @mode = Modes::OAM_SCAN
         @registers = Registers.new
-        @oam = Oam.new(self)
+        @oam = Ram.new(bytes: 160, start_offset: 0xFE00)
+        @vram = vram
       end
 
-      def tick
-        @registers.ly += 1
-      end
-
+      # Returns garbage data (0xFF) if in OAM Scan or Drawing modes
+      #
       def read_oam(address)
+        return 0xFF if [Modes::OAM_SCAN, Modes::DRAWING].include?(@mode)
+
         @oam.read_byte(address)
+      end
+
+      # Direct write is not allowed in OAM Scan or Drawing modes
+      #
+      def write_oam(address)
+        return if [Modes::OAM_SCAN, Modes::DRAWING].include?(@mode)
+
+        @oam.write_byte(address)
       end
 
       def read_registers(address)
@@ -51,6 +61,20 @@ module Spinel
         when 0xFF4B then @registers.wx = value
         end
       end
+
+      private
+
+      # Renders a single frame to the screen.
+      def render_frame; end
+
+      # Iterates through OAM and draws all 40 possible sprites.
+      def draw_oam_sprites; end
+
+      # Draws a single 8x8 tile to the pixel buffer.
+      def draw_tile; end
+
+      # Helper to set a pixel in our 1D pixel buffer.
+      def set_pixel; end
     end
   end
 end
