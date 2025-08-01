@@ -2,23 +2,16 @@
 
 module Spinel
   module Hardware
-    # Serial Port
+    # Joypad Port
     #
+    # TODO: Implement Joypad request interrupt
     class Joypad
-      def initialize
-        @p1_joypad = 0xCF
-      end
+      attr_accessor :p1
 
-      def read_byte(address)
-        case address
-        when 0xFF00 then @p1_joypad
-        end
-      end
+      def initialize(interrupts)
+        @interrupts = interrupts
 
-      def write_byte(address, value)
-        case address
-        when 0xFF00 then @p1_joypad = value
-        end
+        @p1 = 0xCF
       end
     end
   end
