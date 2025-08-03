@@ -66,13 +66,10 @@ module Spinel
         # M-cycle 1 => Fetch 0xCB prefix opcode
         # M-cycle 2 => Fetch current opcode
         # M-cycle 3 => Read value at (HL) and execute instruction
-        # M-cycle 4 => Internal processing
         #
         def bit_mem_hl(cpu)
           value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
           bit_result = (value_at_mem_hl >> @bit_position) & 1
-
-          cpu.internal_delay
 
           cpu.registers.z_flag = bit_result.zero?
           cpu.registers.n_flag = false
@@ -97,11 +94,11 @@ module Spinel
         # M-cycle 4 => Writes the result back to (HL)
         #
         def res_mem_hl(cpu)
-          value_at_mem_hl = cpu.read_bus(cpu.registers.hl)
+          value_at_mem_hl = cpu.bus_read(cpu.registers.hl)
           clear_mask = 1 << @bit_position
 
           result = value_at_mem_hl & ~clear_mask
-          cpu.write_bus(cpu.registers.hl, result)
+          cpu.bus_write(cpu.registers.hl, result)
         end
 
         # M-cycle 1 => Fetch 0xCB prefix opcode
@@ -126,7 +123,7 @@ module Spinel
           set_mask = 1 << @bit_position
 
           result = value_at_mem_hl | set_mask
-          cpu.write_bus(cpu.registers.hl, result)
+          cpu.bus_write(cpu.registers.hl, result)
         end
       end
     end
