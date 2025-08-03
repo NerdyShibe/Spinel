@@ -58,7 +58,7 @@ module Spinel
           reg16_msb = (reg16_value >> 8) & 0xFF
           reg16_lsb = reg16_value & 0xFF
 
-          cpu.internal_delay
+          cpu.internal_delay(cycles: 1)
 
           cpu.registers.sp -= 1
           cpu.bus_write(cpu.registers.sp, reg16_msb)

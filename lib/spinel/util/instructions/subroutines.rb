@@ -123,7 +123,7 @@ module Spinel
         # M-cycles 5 => Calculates address and jumps to it
         #
         def ret_flag(cpu)
-          cpu.internal_delay
+          cpu.internal_delay(cycles: 1)
           return if @flag != :none && cpu.registers.send(@flag) != @value_check
 
           lsb = cpu.bus_read(cpu.registers.sp)
@@ -181,7 +181,7 @@ module Spinel
         # M-cycles 4 => Pushes LSB of return address into the stack and jumps to fixed address
         #
         def rst(cpu)
-          cpu.internal_delay
+          cpu.internal_delay(cycles: 1)
 
           return_address = cpu.registers.pc
           return_address_lsb = return_address & 0xFF
