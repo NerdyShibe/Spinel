@@ -237,7 +237,7 @@ module Spinel
         instructions[0xC8] = Instructions::Subroutines.new(:ret_flag, :z_flag, 1)
         instructions[0xC9] = Instructions::Subroutines.new(:ret)
         instructions[0xCA] = Instructions::Jp.new(:imm16, :z_flag, 1)
-        instructions[0xCB] = Instructions::Prefix.new
+        instructions[0xCB] = nil
         instructions[0xCC] = Instructions::Subroutines.new(:call_imm16, :z_flag, 1)
         instructions[0xCD] = Instructions::Subroutines.new(:call_imm16)
         instructions[0xCE] = Instructions::Adc.new(:imm8)
