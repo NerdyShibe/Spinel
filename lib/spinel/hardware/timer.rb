@@ -24,12 +24,11 @@ module Spinel
         @tma = 0x00
         @tac = 0x00
 
-        @previous_div = nil
-        @previous_tima = nil
-        @previous_tac = nil
-
         @tima_overflowed = false
         @tima_reload_delay = 4
+
+        @div_trigger_bit = update_trigger_bit
+        @timer_enabled = @tac[2] == 1
       end
 
       def tick
@@ -43,9 +42,10 @@ module Spinel
           end
         end
 
+        @previous_div = @div
         @div = (@div + 1) & 0xFFFF
 
-        if timer_enabled? && div_falling_edge?
+        if @timer_enabled && div_falling_edge?
           @tima = (@tima + 1) & 0xFF
 
           if tima_overflowed?
@@ -83,13 +83,15 @@ module Spinel
         when 0xFF07
           @previous_tac = @tac
           @tac = value & 0xFF
+          update_trigger_bit
+          update_timer_status
         end
       end
 
       private
 
-      def previous_div
-        (@div - 1) & 0xFFFF
+      def update_trigger_bit
+        @div_trigger_bit = div_trigger_bit
       end
 
       def div_trigger_bit
@@ -102,7 +104,7 @@ module Spinel
       end
 
       def div_falling_edge?
-        previous_div[div_trigger_bit] == 1 && @div[div_trigger_bit].zero?
+        @previous_div[@div_trigger_bit] == 1 && @div[@div_trigger_bit].zero?
       end
 
       def previous_tima
@@ -113,8 +115,8 @@ module Spinel
         previous_tima == 0xFF && @tima.zero?
       end
 
-      def timer_enabled?
-        @tac[2] == 1
+      def update_timer_status
+        @timer_enabled = @tac[2] == 1
       end
 
       def clock_select

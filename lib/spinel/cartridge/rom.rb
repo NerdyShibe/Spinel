@@ -16,7 +16,7 @@ module Spinel
         # Will have an array of bytes in decimal format [0, 255]
         @data = File.binread(rom_file).bytes
 
-        print_full_info
+        # print_full_info
       end
 
       def read_byte(address)
