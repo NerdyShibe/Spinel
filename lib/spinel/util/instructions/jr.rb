@@ -57,7 +57,7 @@ module Spinel
           return if @flag && cpu.registers.send(@flag) != @value_check
 
           signed_byte = cpu.sign_value(unsigned_byte)
-          cpu.registers.pc += signed_byte
+          cpu.jump_to(cpu.registers.pc + signed_byte)
         end
       end
     end

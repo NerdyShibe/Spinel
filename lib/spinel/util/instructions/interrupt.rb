@@ -60,6 +60,12 @@ module Spinel
         # M-cycle 1 => Fetches opcode and execute instruction
         #
         def halt(cpu)
+          # Halt bug
+          # if cpu.interrupts.any_pending? && cpu.ime_flag == false
+          #   cpu.registers.pc -= 1
+          #   return
+          # end
+
           cpu.halted = true
         end
 

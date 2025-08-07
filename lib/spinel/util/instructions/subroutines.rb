@@ -89,9 +89,9 @@ module Spinel
         # M-cycles 1 => Fetches opcode
         # M-cycles 2 => Fetches low byte
         # M-cycles 3 => Fetches high byte, returns early if condition is not met
-        # M-cycles 4 => Calculates the jump address and return address
-        # M-cycles 5 => Pushes the MSB of the return address into the stack
-        # M-cycles 6 => Pushes the LSB of the return address into the stack, sets jump to PC
+        # M-cycles 4 => Pushes the MSB of the return address into the stack
+        # M-cycles 5 => Pushes the LSB of the return address into the stack
+        # M-cycles 6 => Calculates jump address and jumps to it
         #
         def call_imm16(cpu)
           lsb = cpu.fetch_next_byte
@@ -99,19 +99,10 @@ module Spinel
 
           return if @flag != :none && cpu.registers.send(@flag) != @value_check
 
-          jump_address = cpu.calculate_address(lsb, msb)
+          cpu.stack_push16(cpu.registers.pc)
 
-          return_address = cpu.registers.pc
-          return_address_lsb = return_address & 0xFF
-          return_address_msb = (return_address >> 8) & 0xFF
-
-          cpu.registers.sp -= 1
-          cpu.bus_write(cpu.registers.sp, return_address_msb)
-
-          cpu.registers.sp -= 1
-          cpu.bus_write(cpu.registers.sp, return_address_lsb)
-
-          cpu.registers.pc = jump_address
+          jump_address = (msb << 8) | lsb
+          cpu.jump_to(jump_address)
         end
 
         # Returns from a subroutine execution conditionally
@@ -126,14 +117,8 @@ module Spinel
           cpu.internal_delay(cycles: 1)
           return if @flag != :none && cpu.registers.send(@flag) != @value_check
 
-          lsb = cpu.bus_read(cpu.registers.sp)
-          cpu.registers.sp += 1
-
-          msb = cpu.bus_read(cpu.registers.sp)
-          cpu.registers.sp += 1
-
-          jump_address = cpu.calculate_address(lsb, msb)
-          cpu.registers.pc = jump_address
+          jump_address = cpu.stack_pop16
+          cpu.jump_to(jump_address)
         end
 
         # Returns from a subroutine
@@ -144,14 +129,8 @@ module Spinel
         # M-cycles 4 => Calculates address and jumps to it
         #
         def ret(cpu)
-          lsb = cpu.bus_read(cpu.registers.sp)
-          cpu.registers.sp += 1
-
-          msb = cpu.bus_read(cpu.registers.sp)
-          cpu.registers.sp += 1
-
-          jump_address = cpu.calculate_address(lsb, msb)
-          cpu.registers.pc = jump_address
+          jump_address = cpu.stack_pop16
+          cpu.jump_to(jump_address)
         end
 
         # Performs an unconditional RET and immediately enables interrupts (IME = 1)
@@ -162,14 +141,8 @@ module Spinel
         # M-cycles 4 => Calculates address and jumps to it
         #
         def reti(cpu)
-          lsb = cpu.bus_read(cpu.registers.sp)
-          cpu.registers.sp += 1
-
-          msb = cpu.bus_read(cpu.registers.sp)
-          cpu.registers.sp += 1
-
-          jump_address = cpu.calculate_address(lsb, msb)
-          cpu.registers.pc = jump_address
+          jump_address = cpu.stack_pop16
+          cpu.jump_to(jump_address)
           cpu.ime_flag = true
         end
 

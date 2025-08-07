@@ -65,8 +65,8 @@ module Spinel
 
           return if @flag && cpu.registers.send(@flag) != @value_check
 
-          jump_address = cpu.calculate_address(lsb, msb)
-          cpu.registers.pc = jump_address
+          jump_address = (msb << 8) | lsb
+          cpu.jump_to(jump_address)
         end
 
         # M-cycle 1 => Fetch opcode and jump to [HL]

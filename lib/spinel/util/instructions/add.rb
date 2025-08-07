@@ -118,6 +118,7 @@ module Spinel
           sp_value = cpu.registers.sp
           unsigned_byte = cpu.fetch_next_byte
           signed_byte = cpu.sign_value(unsigned_byte)
+          cpu.internal_delay(cycles: 1)
           result = cpu.add16(sp_value, signed_byte)
 
           cpu.registers.z_flag = false
