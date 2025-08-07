@@ -2,125 +2,114 @@
 
 module Spinel
   module Hardware
-    # Game Boy Timer
-    #
-    # Hardware Registers
-    # $FF03: Divider (DIV)
-    # $FF03: TIMA
-    # $FF03: TMA
-    # $FF03: TAC
+    # Describes the Game Boy built-in Timer
     #
     class Timer
-      CLOCK_00_TRIGGER_BIT = 9
-      CLOCK_01_TRIGGER_BIT = 3
-      CLOCK_10_TRIGGER_BIT = 5
-      CLOCK_11_TRIGGER_BIT = 7
+      # The more accurate way to determine if TIMA needs to be
+      # incremented is to watch a specific Bit in the DIV Register
+      # for a falling edge (change from 1 to 0)
+      #
+      TRIGGER_BIT_FOR_00_CLOCK = 9
+      TRIGGER_BIT_FOR_01_CLOCK = 3
+      TRIGGER_BIT_FOR_10_CLOCK = 5
+      TRIGGER_BIT_FOR_11_CLOCK = 7
 
       def initialize(interrupts)
         @interrupts = interrupts
+        @registers  = Registers.new
 
-        @div = 0xABCC
-        @tima = 0x00
-        @tma = 0x00
-        @tac = 0x00
-
-        @tima_overflowed = false
-        @tima_reload_delay = 4
-
-        @div_trigger_bit = update_trigger_bit
-        @timer_enabled = @tac[2] == 1
+        @div_trigger_bit  = div_trigger_bit
+        @timer_enabled    = @registers.tac_enable == 1
+        @tima_overflowed  = false
+        @tima_reset_delay = 4
       end
 
       def tick
-        if @tima_overflowed
-          @tima_reload_delay -= 1
+        @previous_div = @registers.div
+        @registers.div += 1
 
-          if @tima_reload_delay.zero?
-            @tima = @tma
-            request_interrupt
-            @tima_overflowed = false
-          end
+        if tima_overflowed?
+          @tima_reset_delay -= 1
+
+          return unless @tima_reset_delay.zero?
+
+          reset_tima
+          request_interrupt
+        else
+          return unless timer_enabled? && div_falling_edge?
+
+          @registers.tima += 1
+          @tima_overflowed = true if @registers.tima.zero?
         end
-
-        @previous_div = @div
-        @div = (@div + 1) & 0xFFFF
-
-        if @timer_enabled && div_falling_edge?
-          @tima = (@tima + 1) & 0xFF
-
-          if tima_overflowed?
-            @tima_overflowed = true
-            @tima_reload_delay = 4
-          end
-        end
-      end
-
-      # Only the Timer has access to the full 16-bit value
-      # When something tries to read the value it only gets the high byte
-      #
-      def div
-        @div >> 8
       end
 
       def read_registers(address)
         case address
-        when 0xFF04 then div
-        when 0xFF05 then @tima
-        when 0xFF06 then @tma
-        when 0xFF07 then @tac
+        when 0xFF04 then @registers.div >> 8
+        when 0xFF05 then @registers.tima
+        when 0xFF06 then @registers.tma
+        when 0xFF07 then @registers.tac
         end
       end
 
-      # Writing to DIV resets the value to 0
+      # When writing to DIV the total value of the 16-bit counter
+      # is reset, this can cause a falling edge in the trigger bit
+      # if it was set right before the write (1 => 0)
       #
       def write_registers(address, value)
         case address
         when 0xFF04
-          @div = 0x0000
-          @tima = (@tima + 1) & 0xFF if timer_enabled? && div_falling_edge?
-        when 0xFF05 then @tima = value & 0xFF
-        when 0xFF06 then @tma = value & 0xFF
+          @previous_div = @registers.div
+          @registers.div = 0x0000
+          # TODO: Check for falling edge on trigger bit
+        when 0xFF05 then @registers.tima = value
+        when 0xFF06 then @registers.tma = value
         when 0xFF07
-          @previous_tac = @tac
-          @tac = value & 0xFF
-          update_trigger_bit
-          update_timer_status
+          @previous_tac = @registers.tac
+          @registers.tac = value
+          update_div_trigger_bit
+          update_timer_enabled
+          # TODO: Check for falling edge on TAC
         end
       end
 
       private
 
-      def update_trigger_bit
-        @div_trigger_bit = div_trigger_bit
-      end
-
       def div_trigger_bit
-        case clock_select
-        when 0b00 then CLOCK_00_TRIGGER_BIT
-        when 0b01 then CLOCK_01_TRIGGER_BIT
-        when 0b10 then CLOCK_10_TRIGGER_BIT
-        when 0b11 then CLOCK_11_TRIGGER_BIT
+        case @registers.tac_clock_select
+        when 0b00 then TRIGGER_BIT_FOR_00_CLOCK
+        when 0b01 then TRIGGER_BIT_FOR_01_CLOCK
+        when 0b10 then TRIGGER_BIT_FOR_10_CLOCK
+        when 0b11 then TRIGGER_BIT_FOR_11_CLOCK
         end
       end
 
       def div_falling_edge?
-        @previous_div[@div_trigger_bit] == 1 && @div[@div_trigger_bit].zero?
+        return false if @previous_div[@div_trigger_bit].zero?
+
+        @registers.div[@div_trigger_bit].zero?
       end
 
-      def previous_tima
-        (@tima - 1) & 0xFF
+      def update_div_trigger_bit
+        @div_trigger_bit = div_trigger_bit
+      end
+
+      def timer_enabled?
+        @timer_enabled
+      end
+
+      def update_timer_enabled
+        @timer_enabled = @registers.tac_enable == 1
       end
 
       def tima_overflowed?
-        previous_tima == 0xFF && @tima.zero?
+        @tima_overflowed
       end
 
-      def update_timer_status
-        @timer_enabled = @tac[2] == 1
-      end
-
-      def clock_select
-        @tac & 0b11
+      def reset_tima
+        @registers.tima = @registers.tma
+        @tima_overflowed = false
+        @tima_reset_delay = 4
       end
 
       def request_interrupt
