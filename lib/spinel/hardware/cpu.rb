@@ -11,17 +11,19 @@ module Spinel
     # input to controlling graphics and sound hardware.
     #
     class Cpu
-      attr_accessor :ime_flag_schedule, :m_cycles
-      attr_reader :registers, :opcode, :instruction
+      attr_accessor :ime_flag_schedule, :ime_flag, :m_cycles, :halted
+      attr_reader :registers, :interrupts, :opcode, :instruction
 
-      def initialize(emu, bus, interrupts)
+      def initialize(emu, bus, interrupts, serial_port)
         @emu = emu
         @bus = bus
         @interrupts = interrupts
+        @serial_port = serial_port
+
         @registers = Registers.new
 
-        @ime_flag = true
-        @ime_flag_schedule = :none
+        @ime_flag = false
+        @ime_flag_schedule = false
         @halted = false
         @stopped = false
 
@@ -30,146 +32,179 @@ module Spinel
         @opcode = nil
         @instruction = nil
 
-        @cb_prefix_mode = false
         @instructions = Util::InstructionSet.build_unprefixed
         @cb_instructions = Util::InstructionSet.build_cb_prefixed
-        # debugger
       end
 
       def run
-        if !@halted && !@stopped
-          debug_info
-          fetch_instruction
-          execute
-          check_interrupt_schedule
-        else
-          handle_interrupts
+        if @interrupts.any_pending?
+          if @ime_flag
+            @halted = false if @halted
+
+            interrupt_service_routine
+            return
+          elsif @halted
+            @halted = false
+          end
         end
+
+        check_ime_schedule
+
+        if @halted
+          @emu.advance_cycles(4)
+          return
+        end
+
+        debug_info
+        fetch_instruction
+        execute
       end
 
-      def advance_cycles
+      def advance_cycles(m_cycles)
         @m_cycles += 1
-        @emu.advance_cycles(4)
+        @emu.advance_cycles(m_cycles * 4)
+      end
+
+      def internal_delay(cycles:)
+        advance_cycles(cycles)
       end
 
       def fetch_next_byte
         byte = @bus.read_byte(@registers.pc)
         @registers.pc += 1
-        advance_cycles
+        advance_cycles(1)
 
         byte
       end
 
       def bus_read(address)
         byte = @bus.read_byte(address)
-        advance_cycles
+        advance_cycles(1)
 
         byte
       end
 
       def bus_write(address, value)
         @bus.write_byte(address, value)
-        advance_cycles
+        advance_cycles(1)
       end
 
-      def calculate_address(lsb, msb)
-        address = (msb << 8) | lsb
-        advance_cycles
-
-        address
-      end
-
-      def sign_value(unsigned_byte)
-        signed_byte = unsigned_byte >= 128 ? (unsigned_byte - 256) : unsigned_byte
-        advance_cycles
-
-        signed_byte
+      def sign_value(byte)
+        byte >= 128 ? (byte - 256) : byte
       end
 
       def add16(value1, value2)
         sum = value1 + value2
-        advance_cycles
+        advance_cycles(1)
 
         sum
       end
 
       def sub16(value1, value2)
         sub = value1 - value2
-        advance_cycles
+        advance_cycles(1)
 
         sub
       end
 
       def load16(register, value)
         @registers.send("#{register}=", value)
-        advance_cycles
+        advance_cycles(1)
       end
 
-      def internal_delay
-        advance_cycles
+      def stack_push(value)
+        @registers.sp -= 1
+        bus_write(@registers.sp, value)
+      end
+
+      def stack_push16(value)
+        stack_push((value >> 8) & 0xFF)
+        stack_push(value & 0xFF)
+      end
+
+      def stack_pop
+        popped_value = bus_read(@registers.sp)
+        @registers.sp += 1
+
+        popped_value
+      end
+
+      def stack_pop16
+        lsb = stack_pop
+        msb = stack_pop
+
+        (msb << 8) | lsb
+      end
+
+      def jump_to(address)
+        advance_cycles(1)
+
+        @registers.pc = address
       end
 
       private
 
       def fetch_instruction
+        @cb_prefix_mode = false
         @opcode = fetch_next_byte
-        @cb_prefix_mode = @opcode == 0xCB
+
+        if @opcode == 0xCB
+          @opcode = fetch_next_byte
+          @cb_prefix_mode = true
+        end
+
+        @instruction = @cb_prefix_mode ? @cb_instructions[@opcode] : @instructions[@opcode]
       end
 
       def execute
-        instruction_set = @cb_prefix_mode ? @cb_instructions : @instructions
-        instruction_set[@opcode].execute(self)
+        @instruction.execute(self)
       end
 
-      def check_interrupt_schedule
-        return if @ime_flag_schedule == :none
+      # Disables IME flag, gets address vector to jump to
+      # Services the priority interrupt, pushes the current PC to the stack
+      # Jumps to the address vector
+      #
+      # 2 M-cycles of internal processing
+      # 2 M-cycles to write the current PC to the stack
+      # 1 M-cycle to jump to address vector
+      #
+      def interrupt_service_routine
+        internal_delay(cycles: 2)
+        @ime_flag = false
 
-        @ime_flag = @ime_flag_schedule == :enable
-        @ime_flag_schedule = :none
+        address_vector = @interrupts.priority_vector
+        @interrupts.priority_service
+
+        stack_push16(@registers.pc)
+        jump_to(address_vector)
       end
 
-      def handle_interrupts
-        pending_interrupts = @interrupts.read_byte(0xFFFF) & @interrupts.read_byte(0xFF0F)
+      def check_ime_schedule
+        return unless @ime_flag_schedule
 
-        return if pending_interrupts.zero?
-
-        @halted = false
-        return unless @ime_flag
-
-        # TODO
-        puts 'Serve interrupts by priority 0 -> 5, 1 per cycle'
-        # serve_pending_interrupts = :not_implemented
+        @ime_flag = @ime_flag_schedule
+        @ime_flag_schedule = false
       end
 
       def debug_info
-        instruction_set = @cb_prefix_mode ? @cb_instructions : @instructions
-        instruction = instruction_set[@bus.read_byte(@registers.pc)]
-        puts "#{format('%08d', @m_cycles)}  " \
-             "$#{format('%04X', @registers.pc)}:  " \
-             "#{instruction.mnemonic.ljust(20, ' ')}" \
-             "(#{format('%02X', @bus.read_byte(@registers.pc))} " \
-             "#{format('%02X', @bus.read_byte(@registers.pc + 1))} " \
-             "#{format('%02X', @bus.read_byte(@registers.pc + 2))} " \
-             "#{format('%02X', @bus.read_byte(@registers.pc + 3))} " \
-             "#{format('%02X', @bus.read_byte(@registers.pc + 4))})     " \
-             "F: #{format('%08B', @registers.f)}, " \
-             "A: #{format('%02X', @registers.a)}, " \
-             "B: #{format('%02X', @registers.b)}, " \
-             "C: #{format('%02X', @registers.c)}, " \
-             "D: #{format('%02X', @registers.d)}, " \
-             "E: #{format('%02X', @registers.e)}, " \
-             "H: #{format('%02X', @registers.h)}, " \
-             "L: #{format('%02X', @registers.l)}  " \
+        # instruction_set = @bus.read_byte(@registers.pc) == 0xCB ? @cb_instructions : @instructions
+        # instruction = instruction_set[@bus.read_byte(@registers.pc)]
+
+        # puts "#{format('%08d', @m_cycles)} || " \
+        #      "$#{format('%04X', @registers.pc)} || " \
+        #      "#{instruction.mnemonic.ljust(20, ' ')}" \
+        #      "(#{format('%02X', @bus.read_byte(@registers.pc))} " \
+        #      "#{format('%02X', @bus.read_byte(@registers.pc + 1))} " \
+        #      "#{format('%02X', @bus.read_byte(@registers.pc + 2))}) || " \
+        #      "F: #{format('%04B', @registers.f >> 4)}, " \
+        #      "A: #{format('%02X', @registers.a)}, " \
+        #      "BC: #{format('%04X', @registers.bc)}, " \
+        #      "DE: #{format('%04X', @registers.de)}, " \
+        #      "HL: #{format('%04X', @registers.hl)} || " \
+        #      "SP: $#{format('%04X', @registers.sp)} || "
+
+        puts "\n\n##{@m_cycles} SERIAL MESSAGE: #{@serial_port.message_buffer.join}"
       end
-
-      # def update_ime_flag
-      #   return false if @ime_flag_schedule == :none
-
-      #   @ime_flag = true if @ime_flag_schedule == :enable
-      #   @ime_flag = false if @ime_flag_schedule == :disable
-
-      #   @ime_flag_schedule = :none
-      # end
     end
   end
 end
