@@ -17,11 +17,13 @@ module Spinel
         joypad: 4
       }.freeze
 
-      VBLANK_VECTOR   = 0x0040
-      LCD_STAT_VECTOR = 0x0048
-      TIMER_VECTOR    = 0x0050
-      SERIAL_VECTOR   = 0x0058
-      JOYPAD_VECTOR   = 0x0060
+      INTERRUPT_VECTORS = {
+        vblank: 0x0040,
+        lcd_stat: 0x0048,
+        timer: 0x0050,
+        serial: 0x0058,
+        joypad: 0x0060
+      }.freeze
 
       def initialize
         @if = 0x00
@@ -50,6 +52,21 @@ module Spinel
         @ie = value & 0b00011111
       end
 
+      # Checks if any interrupt was requested and is also currently enabled
+      # (Same bit is set in both registers)
+      #
+      # @return [Boolean] `true` if any bit is enabled in both registers, `false` otherwise
+      #
+      def any_pending?
+        @if.anybits?(@ie)
+      end
+
+      def pending?(interrupt_type)
+        interrupt_bit = INTERRUPT_MAP[interrupt_type]
+
+        (@if[interrupt_bit] & @ie[interrupt_bit]) == 1
+      end
+
       # Signals an interrupt request by setting the
       # appropriate bit in the Interrupt Flag register
       #
@@ -59,70 +76,21 @@ module Spinel
         @if |= (1 << interrupt_bit)
       end
 
+      def priority_interrupt
+        INTERRUPT_MAP.keys.find { |interrupt_type| pending?(interrupt_type) }
+      end
+
       # Signals that an interrupt has been served by clearing the
       # appropriate bit in the Interrupt Flag register
       #
-      def service(interrupt_type)
-        interrupt_bit = INTERRUPT_MAP[interrupt_type]
+      def priority_service
+        interrupt_bit = INTERRUPT_MAP[priority_interrupt]
 
         @if &= ~(1 << interrupt_bit)
       end
 
       def priority_vector
-        if vblank_pending?
-          VBLANK_VECTOR
-        elsif lcd_stat_pending?
-          LCD_STAT_VECTOR
-        elsif timer_pending?
-          TIMER_VECTOR
-        elsif serial_pending?
-          SERIAL_VECTOR
-        elsif joypad_pending?
-          JOYPAD_VECTOR
-        end
-      end
-
-      def clear_priority_bit
-        if vblank_pending?
-          service(:vblank)
-        elsif lcd_stat_pending?
-          service(:vblank)
-        elsif timer_pending?
-          service(:timer)
-        elsif serial_pending?
-          service(:serial)
-        elsif joypad_pending?
-          service(:joypad)
-        end
-      end
-
-      # Checks if an interrupt was requested and is also currently enabled
-      # (Same bit is set in both registers)
-      #
-      # @return [Boolean] `true` if any bit is enabled in both registers, `false` otherwise
-      #
-      def pending?
-        @if.anybits?(@ie)
-      end
-
-      def vblank_pending?
-        @if[0] & @ie[0] != 0
-      end
-
-      def lcd_stat_pending?
-        @if[1] & @ie[1] != 0
-      end
-
-      def timer_pending?
-        @if[2] & @ie[2] != 0
-      end
-
-      def serial_pending?
-        @if[3] & @ie[3] != 0
-      end
-
-      def joypad_pending?
-        @if[4] & @ie[4] != 0
+        INTERRUPT_VECTORS[priority_interrupt]
       end
     end
   end
